@@ -1,8 +1,13 @@
-import React from 'react';
-import { View } from 'react-native';
+import React from 'react'
+import { SafeAreaView, View, Image } from 'react-native'
+import { Slot } from 'expo-router'
 
-type Props = { children: React.ReactNode };
-
-export default function AuthLayout({ children }: Props) {
-	return <View className="flex-1">{children}</View>;
+export default function AuthLayout() {
+	return (
+		<SafeAreaView className="flex-1 bg-gray-100">
+			<View className="flex-1 justify-center px-6">
+				<Slot />
+			</View>
+		</SafeAreaView>
+	)
 }

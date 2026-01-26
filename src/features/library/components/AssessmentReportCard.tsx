@@ -19,7 +19,7 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardPr
       onPressIn={onPressIn}
       onPressOut={onPressOut}
     >
-      <Animated.View style={[{ flex: 1, elevation: 1 }, animatedStyle]} className="bg-white rounded-md p-4 w-40 mb-4">
+      <Animated.View style={[{ elevation: 1 }, animatedStyle]} className="bg-white rounded-md p-4 w-40 mb-4">
           {/* Slide Preview Image */}
           <View className="aspect-square w-full overflow-hidden mb-3 ">
             <Image 

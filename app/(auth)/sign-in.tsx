@@ -1,10 +1,2 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+export { default } from '../../src/features/auth/screens/SignInScreen'
 
-export default function SignInScreen() {
-	return (
-		<View className="flex-1 justify-center items-center">
-			<Text className="text-xl font-semibold">Sign In</Text>
-		</View>
-	);
-}

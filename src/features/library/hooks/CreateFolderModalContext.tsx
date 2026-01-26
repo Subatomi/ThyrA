@@ -68,7 +68,7 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
 
       {isActionBarVisible && (
         <>
-          <Pressable style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }} onPress={closeActionBar} />
+          <Pressable className="absolute inset-0" onPress={closeActionBar} />
           <ActionBar
             onEdit={() => { if (actionEditHandler) actionEditHandler(); else Alert.alert('Edit', 'Edit action'); }}
             onDelete={() => { if (actionDeleteHandler) actionDeleteHandler(); else Alert.alert('Delete', 'Delete action'); }}

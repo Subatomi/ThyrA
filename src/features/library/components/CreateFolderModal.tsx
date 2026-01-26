@@ -26,7 +26,7 @@ export default function CreateFolderModal({ visible, onClose, onCreate }: Props)
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
         <View className="flex-1 bg-black/40 items-center justify-center">
           <View className="w-11/12 bg-white rounded-xl p-6">
             <View className="flex-row items-center mb-3">

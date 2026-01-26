@@ -27,7 +27,7 @@ export default function EditFolderModal({ visible, initialName = '', initialDesc
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
         <View className="flex-1 bg-black/40 items-center justify-center">
           <View className="w-11/12 bg-white rounded-xl p-6">
             <View className="flex-row items-center mb-3">
@@ -45,7 +45,7 @@ export default function EditFolderModal({ visible, initialName = '', initialDesc
               <Pressable onPress={onClose} className="px-4 py-2 mr-2">
                 <Text className="text-gray-700">Cancel</Text>
               </Pressable>
-              <Pressable onPress={handleSave} className="px-4 py-2 bg-red-600 rounded-md">
+              <Pressable onPress={handleSave} className="px-4 py-2 bg-emerald-600 rounded-md">
                 <Text className="text-white">Save</Text>
               </Pressable>
             </View>

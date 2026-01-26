@@ -2,8 +2,11 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
+import { useLocalSearchParams, useRouter } from 'expo-router'
 
 export default function AnalysisScreen() {
+  const { image } = useLocalSearchParams() as { image?: string }
+  const router = useRouter()
   return (
     <ScrollView className="flex-1 bg-gray-100"
     contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
@@ -19,7 +22,13 @@ export default function AnalysisScreen() {
       </View>
 
       <View className="w-full my-4">
-        <ImageUploadArea />
+        <ImageUploadArea
+          externalImageUri={typeof image === 'string' ? image : null}
+          onRemove={() => {
+            // clear image param by replacing route without params
+            router.replace('/analysis')
+          }}
+        />
       </View>
 
       <Pressable className="w-full mb-6 mt-2" >

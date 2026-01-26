@@ -1,8 +1,10 @@
 import { ScrollView, Text, View } from 'react-native';
 import ImageUploadArea from '../../../components/ImageUploadArea';
+import { useRouter } from 'expo-router';
 import RecentAnalysis from '@/features/library/components/RecentAnalysis';
 
 export default function HomeScreen() {
+  const router = useRouter()
   return (
     <ScrollView 
       className="flex-1 bg-gray-100" 
@@ -16,7 +18,12 @@ export default function HomeScreen() {
       </Text>
 
       <View className="w-full mt-4">
-        <ImageUploadArea />
+        <ImageUploadArea
+          preventLocalPreview
+          onPick={(uri) => {
+            router.push({ pathname: '/analysis', params: { image: uri } })
+          }}
+        />
       </View>
 
       <View className="w-full mt-6">

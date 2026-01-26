@@ -10,19 +10,17 @@ type Props = {
 
 export default function ActionBar({ onEdit, onDelete, onClose }: Props) {
   return (
-    <View pointerEvents="box-none" className="absolute left-0 right-0 bottom-0 items-center">
-      <View className="w-full" style={{elevation:4}}>
-        <View className="flex-row items-center bg-white p-1 rounded-t-xl shadow-xl w-full justify-center gap-10">
-          <Pressable onPress={() => { onEdit?.(); onClose(); }} className="items-center px-2 py-2">
-            <Edit3 size={15} color="#000" />
-            <Text className="text-xs mt-1">Edit</Text>
-          </Pressable>
+    <View pointerEvents="box-none" className="absolute left-4 right-4 bottom-3 items-center">
+      <View className="bg-white w-full rounded-lg p-2 flex-row justify-center gap-10 items-center shadow" style={{ elevation: 6 }}>
+        <Pressable onPress={() => { onEdit?.(); onClose(); }} className="p-2 rounded-md items-center">
+          <Edit3 size={20} color="#111827" />
+          <Text className="text-xs mt-1">Edit</Text>
+        </Pressable>
 
-          <Pressable onPress={() => { onDelete?.(); onClose(); }} className="items-center px-2 py-2">
-            <Trash2 size={15} color="#000" />
-            <Text className="text-xs mt-1">Delete</Text>
-          </Pressable>
-        </View>
+        <Pressable onPress={() => { onDelete?.(); onClose(); }} className="p-2 rounded-md items-center">
+          <Trash2 size={20} color="#E11D48" />
+          <Text className="text-xs mt-1">Delete</Text>
+        </Pressable>
       </View>
     </View>
   );

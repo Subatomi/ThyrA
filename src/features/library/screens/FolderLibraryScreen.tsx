@@ -11,17 +11,15 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array
 
   return (
     <View className='flex-1'>
-      <ScrollView
-        className="flex-1 bg-gray-100"
-        contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
-        <View style={{ width: '100%', marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}>
+      <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
+        <View className="w-full mb-4 flex-row items-center">
           <BackButton />
-          <View style={{ flex: 1, alignItems: 'center' }}>
+          <View className="flex-1 items-center">
             <Text className="font-bold text-4xl text-center text-gray-900">Folder Library</Text>
           </View>
-          <View style={{ width: 48 }} />
+          <View className="w-12" />
         </View>
-        
+
         <View className="w-full flex-row flex-wrap items-center justify-between gap-4">
           {folders.map((f) => (
             <FolderCard key={f.id} title={f.title} itemCount={f.itemCount} date={f.date} />
@@ -31,8 +29,8 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array
 
       <CreateFolderButton />
     </View>
-  );
-}
+  )
+  }
 
 export default function FolderLibraryScreen() {
   const [folders, setFolders] = useState<Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>>([

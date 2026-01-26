@@ -23,15 +23,21 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
       onLongPress={() => openActionBar({ onEdit: onMenuPress, onDelete: undefined })}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      className="w-40 mb-4"
+      className="w-30 h-56 mb-4"
     >
-      <Animated.View style={[{ elevation: 4, borderRadius: 12 }, animatedStyle]} className="bg-white rounded-lg p-6 w-full shadow-lg shadow-gray-200">
+      <Animated.View style={[{ elevation: 4 }, animatedStyle]} className="bg-white rounded-lg p-4 w-full h-full shadow-lg shadow-gray-200">
         {/* Menu Button - Absolute positioned to top right */}
         <View className="absolute top-4 right-2 z-10">
-          <Pressable onPress={() => openActionBar({
-            onEdit: () => openEditModal({ name: title, description: '' }),
-            onDelete: () => openDeleteModal(title),
-          })} onLongPress={() => openActionBar({ onEdit: () => openEditModal({ name: title, description: '' }), onDelete: () => openDeleteModal(title) })} className="p-2 active:opacity-50">
+          <Pressable onPress={() => {
+            if (onMenuPress) {
+              onMenuPress()
+              return
+            }
+            openActionBar({
+              onEdit: () => openEditModal({ name: title, description: '' }),
+              onDelete: () => openDeleteModal(title),
+            })
+          }} onLongPress={() => openActionBar({ onEdit: () => openEditModal({ name: title, description: '' }), onDelete: () => openDeleteModal(title) })} className="p-2 active:opacity-50">
             <MoreVerticalIcon size={24} color="#000" strokeWidth={3} />
           </Pressable>
         </View>
@@ -47,8 +53,7 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
             />
             {/* Accent Tab (Visual tweak to match your orange/yellow folder) */}
             <View 
-              className="absolute top-[10px] left-[5px] w-8 h-3 rounded-sm bg-orange-500/20" 
-              style={{ backgroundColor: '#F59E0B', borderTopLeftRadius: 4, borderTopRightRadius: 8 }}
+              className="absolute top-[10px] left-[5px] w-8 h-3 rounded-tl-sm rounded-tr-md bg-amber-500"
             />
           </View>
         </View>
@@ -57,11 +62,12 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
         <View className="items-center">
           <Text
             numberOfLines={1}
-            className="text-2xl font-bold text-black text-center mb-1"
+            ellipsizeMode="tail"
+            className="text-lg font-bold text-black text-center mb-1 w-full"
           >
             {title}
           </Text>
-          
+
           <Text className="text-xs w-full text-center text-gray-800 font-medium">{itemCount} Items <Text className="text-gray-400">|</Text> {date}</Text>
         </View>
       </Animated.View>

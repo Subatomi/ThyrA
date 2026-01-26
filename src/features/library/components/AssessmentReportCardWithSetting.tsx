@@ -8,28 +8,28 @@ interface ReportCardProps {
   imageSource?: any;
   onPress?: () => void;
   onMenuPress?: () => void;
+  onLongPress?: () => void;
 }
 
-const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, onMenuPress }: ReportCardProps) => {
+const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, onMenuPress, onLongPress }: ReportCardProps) => {
   return (
     <Pressable 
       onPress={onPress}
-      // Standard card styling with NativeWind
-      className="bg-white rounded-3xl p-4 w-[48%] mb-4 shadow-sm"
-      style={{ elevation: 3 }}
+      onLongPress={onLongPress}
+      className="bg-white w-40 h-56 mb-4 rounded-lg shadow-md"
     >
       {/* Menu Button */}
-      <View className="items-end mb-2">
+      <View className="items-end my-2">
         <Pressable onPress={onMenuPress} className="p-1 active:opacity-50">
           <MoreVertical size={20} color="#000" />
         </Pressable>
       </View>
 
       {/* Slide Preview Image */}
-      <View className="aspect-square w-full rounded-xl overflow-hidden mb-3 bg-gray-100">
+      <View className="mb-2 items-center justify-center ">
         <Image 
-          source={imageSource ? imageSource : require('@assets/img/placeholder-slide.png')} 
-          className="w-full h-full"
+          source={imageSource ? imageSource : require('../../../../assets/img/sampleImages/sample1.jpg')} 
+          className="w-28 h-28"
           resizeMode="cover"
         />
       </View>

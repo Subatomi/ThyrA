@@ -16,7 +16,7 @@ const Index = () => {
 
       {/* Button styling with ThyrA Red */}
       <Pressable 
-        onPress={() => router.push('/about')}
+        onPress={() => router.push('/onboarding')}
         className="bg-[#E31837] px-10 py-4 rounded-lg active:bg-red-800"
       >
         <Text className="text-white font-bold text-base">
