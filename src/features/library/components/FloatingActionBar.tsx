@@ -11,11 +11,11 @@ const FloatingActionBar: React.FC<Props> = ({ onEdit, onDelete }) => {
   return (
     <View className="absolute left-4 right-4 bottom-3">
       <View className="bg-white rounded-lg p-2 flex-row justify-center gap-10 items-center shadow" style={{ elevation: 6 }}>
-        <Pressable onPress={onEdit} className="p-2 rounded-md items-center">
+        <Pressable onPress={onEdit} className="p-2 rounded-md items-center  mt-1 ">
           <Edit3 size={20} color="#111827" />
           <Text className="text-xs mt-1">Edit</Text>
         </Pressable>
-        <Pressable onPress={onDelete} className="p-2 rounded-md items-center">
+        <Pressable onPress={onDelete} className="p-2 rounded-md items-center  mt-1 ">
           <Trash2 size={20} color="#E11D48" />
           <Text className="text-xs mt-1">Delete</Text>
         </Pressable>

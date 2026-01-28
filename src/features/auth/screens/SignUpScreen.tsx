@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, Pressable, Image, ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
+import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 
 const SignUpScreen: React.FC = () => {
 	const [email, setEmail] = useState('')
@@ -10,14 +11,8 @@ const SignUpScreen: React.FC = () => {
 
 	return (
 		<ScrollView contentContainerStyle={{ flexGrow: 1 }} className="bg-gray-100">
-			<View className="flex-1 items-center justify-center py-16 px-6">
-
-                <Image
-                    source={require('../../../../assets/img/Group 110.png')}
-                    className="w-52 h-52"
-                    resizeMode="contain"
-                />
-
+			<View className="flex-1 items-center justify-center py-16 px-8">
+				<LogoTitleVertical width={200} height={200} className="mb-8" />
 				<Text className="text-2xl font-bold text-black mb-1">Create a free account</Text>
 				<Text className="text-sm text-gray-600 mb-6">Provide your email and choose a password</Text>
 

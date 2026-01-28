@@ -10,9 +10,11 @@ import {
   NativeScrollEvent,
   ImageSourcePropType,
 } from 'react-native';
+import Svg from 'react-native-svg';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
+import LogoTitle from 'assets/icons/LogoTitle';
 
 const { width } = Dimensions.get('window');
 
@@ -97,8 +99,8 @@ const OnBoardingScreen = () => {
           <View style={{ width: 40 }} />
         )}
 
-        <View className="justify-center items-center">
-          <Image source={require('../../../../assets/img/logo-2.png')} style={{ width: 150, height: 50 }} resizeMode="contain" />
+        <View className="justify-center items-center w-fit h-fit">
+          <LogoTitle width={200} height={40} />
         </View>
         <View style={{ width: 40 }} />
       </View>

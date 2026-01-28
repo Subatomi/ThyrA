@@ -20,10 +20,18 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
   return (
     <Pressable
       onPress={onPress}
-      onLongPress={() => openActionBar({ onEdit: onMenuPress, onDelete: undefined })}
+      onLongPress={() =>
+        openActionBar({
+          onEdit: () => {
+            if (onMenuPress) onMenuPress()
+            else openEditModal({ name: title, description: '' })
+          },
+          onDelete: () => openDeleteModal(title),
+        })
+      }
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      className="w-30 h-56 mb-4"
+      className="w-full max-w-48 h-56 mb-4"
     >
       <Animated.View style={[{ elevation: 4 }, animatedStyle]} className="bg-white rounded-lg p-4 w-full h-full shadow-lg shadow-gray-200">
         {/* Menu Button - Absolute positioned to top right */}

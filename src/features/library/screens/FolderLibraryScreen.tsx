@@ -1,36 +1,41 @@
-import { View, Text } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { View, Text, Alert, FlatList } from 'react-native';
 import BackButton from '../../../components/BackButton';
 import FolderCard from '../components/FolderCardWithSetting';
 import CreateFolderButton from '../components/CreateFolderButton';
-import { Alert } from 'react-native';
 import CreateFolderProvider from '../hooks/CreateFolderModalContext';
 import { useEffect, useState } from 'react';
 
 function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>; onCreate: (data: { name: string; description?: string }) => void; onEdit: (originalName: string | undefined, data: { name: string; description?: string }) => void; onDelete: (name?: string) => void }) {
 
   return (
-    <View className='flex-1'>
-      <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
-        <View className="w-full mb-4 flex-row items-center">
-          <BackButton />
-          <View className="flex-1 items-center">
-            <Text className="font-bold text-4xl text-center text-gray-900">Folder Library</Text>
-          </View>
-          <View className="w-12" />
+    <View className='flex-1 bg-gray-100 p-5'>
+      <View className="w-full mb-4 flex-row items-center px-5 py-2">
+        <BackButton />
+        <View className="flex-1 items-center">
+          <Text className="font-bold text-4xl text-left text-gray-900">Folder Library</Text>
         </View>
+        <View className="w-12" />
+      </View>
 
-        <View className="w-full flex-row flex-wrap items-center justify-between gap-4">
-          {folders.map((f) => (
-            <FolderCard key={f.id} title={f.title} itemCount={f.itemCount} date={f.date} />
-          ))}
-        </View>
-      </ScrollView>
+      <View className='flex-1 items-center justify-center '>
+        <FlatList
+          data={folders}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+          columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
+          renderItem={({ item }) => (
+            <View className="px-2 mb-4" style={{ width: 160 }}>
+              <FolderCard title={item.title} itemCount={item.itemCount} date={item.date} />
+            </View>
+          )}
+        />
+      </View>
 
       <CreateFolderButton />
     </View>
   )
-  }
+}
 
 export default function FolderLibraryScreen() {
   const [folders, setFolders] = useState<Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>>([

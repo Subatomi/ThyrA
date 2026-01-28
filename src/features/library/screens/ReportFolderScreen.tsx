@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import { View, Text, ScrollView, Alert, Pressable } from 'react-native'
+import { View, Text, Alert, Pressable, FlatList } from 'react-native'
 import BackButton from '../../../components/BackButton'
 import AssessmentReportCardWithSetting from '../components/AssessmentReportCardWithSetting'
-import { Edit3, Trash2 } from 'lucide-react-native'
 import FloatingActionBar from '../components/FloatingActionBar'
 import CreateFolderProvider, { useCreateFolder } from '../hooks/CreateFolderModalContext'
 import EditReportTitleModal from '../components/EditReportTitleModal'
@@ -18,6 +17,12 @@ export default function ReportFolderScreen() {
     { id: 'r6', title: 'Sample Title', date: 'MM/DD/YYYY', image: require('../../../../assets/img/sampleImages/sample3.jpg') },
   ])
 
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
+  const [selectedReportTitle, setSelectedReportTitle] = useState('')
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [showFloatingActions, setShowFloatingActions] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+
   function handleMenu(reportId: string) {
     const r = reports.find((x) => x.id === reportId)
     setSelectedReportId(reportId)
@@ -27,17 +32,10 @@ export default function ReportFolderScreen() {
 
   function handleCardPress(reportId: string) {
     Alert.alert('Open report', `Open report ${reportId}`)
-    // clear any selection / floating actions when opening normally
     setSelectedReportId(null)
     setSelectedReportTitle('')
     setShowFloatingActions(false)
   }
-
-  const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
-  const [selectedReportTitle, setSelectedReportTitle] = useState('')
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [showFloatingActions, setShowFloatingActions] = useState(false)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
   function handleProviderEdit(originalName: string | undefined, data: { name: string; description?: string }) {
     if (!originalName) return
@@ -52,37 +50,41 @@ export default function ReportFolderScreen() {
 
   return (
     <CreateFolderProvider onEdit={handleProviderEdit} onDelete={handleProviderDelete}>
-      <View className="flex-1">
-        <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
-        <View className="w-full mb-4 flex-row items-center">
+      <View className="flex-1 bg-gray-100 p-5">
+        <View className="w-full mb-4 flex-row items-center px-5 py-2">
           <BackButton />
           <View className="flex-1 items-center">
-            <Text className="font-bold text-4xl text-center text-gray-900">Folder Title</Text>
+            <Text className="font-bold text-4xl text-left text-gray-900">Folder Title</Text>
           </View>
           <View className="w-12" />
         </View>
 
-        <View className="w-full flex-row flex-wrap items-center justify-between gap-4">
-          {reports.map((r) => (
-            <AssessmentReportCardWithSetting
-              key={r.id}
-              title={r.title}
-              date={r.date}
-              imageSource={r.image}
-              onPress={() => handleCardPress(r.id)}
-              onLongPress={() => handleMenu(r.id)}
-              onMenuPress={() => handleMenu(r.id)}
-            />
-          ))}
+        <View className="flex-1 items-center justify-center ">
+          <FlatList
+            data={reports}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+            columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View className="px-2 mb-4" style={{ width: 160 }}>
+                <AssessmentReportCardWithSetting
+                  title={item.title}
+                  date={item.date}
+                  imageSource={item.image}
+                  onPress={() => handleCardPress(item.id)}
+                  onLongPress={() => handleMenu(item.id)}
+                  onMenuPress={() => handleMenu(item.id)}
+                />
+              </View>
+            )}
+          />
         </View>
-        </ScrollView>
-
+        
         {showFloatingActions && (
           <>
-            <Pressable
-              onPress={() => setShowFloatingActions(false)}
-              className="absolute inset-0"
-            />
+            <Pressable onPress={() => setShowFloatingActions(false)} className="absolute inset-0" />
             <FloatingActions
               selectedTitle={selectedReportTitle}
               onRequestLocalEdit={() => setEditModalVisible(true)}
@@ -90,6 +92,7 @@ export default function ReportFolderScreen() {
             />
           </>
         )}
+
         <EditReportTitleModal
           visible={editModalVisible}
           initialName={selectedReportTitle}
@@ -100,6 +103,7 @@ export default function ReportFolderScreen() {
             setEditModalVisible(false)
           }}
         />
+
         <DeleteReportModal
           visible={deleteModalVisible}
           reportName={selectedReportTitle}
@@ -139,5 +143,3 @@ function FloatingActions({ selectedTitle, onRequestLocalEdit, onRequestLocalDele
     </>
   )
 }
- 
-

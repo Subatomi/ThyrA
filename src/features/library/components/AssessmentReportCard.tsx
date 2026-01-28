@@ -23,7 +23,7 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardPr
           {/* Slide Preview Image */}
           <View className="aspect-square w-full overflow-hidden mb-3 ">
             <Image 
-              source={imageSource ? imageSource : require('../../../../assets/img/logo-2.png')} 
+              source={imageSource ? imageSource : require('assets/img/topographic_background.jpg')} 
               className="w-full h-full"
               resizeMode="cover"
             />

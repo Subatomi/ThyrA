@@ -1,14 +1,11 @@
 import { Text, View, Image, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import LogoTitleVertical from 'assets/icons/LogoTitleVertical';
 
 const Index = () => {
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Image
-        source={require('../assets/img/Group 110.png')}
-        className="w-52 h-52"
-        resizeMode="contain"
-      />
+      <LogoTitleVertical />
 
       <Text className="mt-2 mb-8 text-gray-600">
         Thyroid Adequacy testing app
@@ -23,6 +20,7 @@ const Index = () => {
           Get Started
         </Text>
       </Pressable>
+      
     </View>
   );
 };

@@ -9,14 +9,15 @@ interface ReportCardProps {
   onPress?: () => void;
   onMenuPress?: () => void;
   onLongPress?: () => void;
+  className?: string;
 }
 
-const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, onMenuPress, onLongPress }: ReportCardProps) => {
+const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, onMenuPress, onLongPress, className }: ReportCardProps) => {
   return (
     <Pressable 
       onPress={onPress}
       onLongPress={onLongPress}
-      className="bg-white w-40 h-56 mb-4 rounded-lg shadow-md"
+      className={`bg-white w-full max-w-48 h-56 mb-4 rounded-lg shadow-md ${className ?? ''}`}
     >
       {/* Menu Button */}
       <View className="items-end my-2">
