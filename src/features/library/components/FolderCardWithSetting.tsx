@@ -37,7 +37,7 @@ const FolderCard = ({ id,title, itemCount, date, onPress, onMenuPress }: FolderC
         openActionBar({
           onEdit: () => {
             if (onMenuPress) onMenuPress()
-            else openEditModal({ name: title, description: '' })
+            else openEditModal({id, name: title, description: '' })
           },
           onDelete: () => openDeleteModal(title,id.toString()),
         })
@@ -57,13 +57,13 @@ const FolderCard = ({ id,title, itemCount, date, onPress, onMenuPress }: FolderC
                   return;
                 }
                 openActionBar({
-                  onEdit: () => openEditModal({ name: title, description: '' }),
+                  onEdit: () => openEditModal({id, name: title, description: '' }),
                   onDelete: () => openDeleteModal(title,id.toString()),
                 });
               }}
               onLongPress={() =>
                 openActionBar({
-                  onEdit: () => openEditModal({ name: title, description: '' }),
+                  onEdit: () => openEditModal({ id,name: title, description: '' }),
                   onDelete: () => openDeleteModal(title,id.toString()),
                 })
               }

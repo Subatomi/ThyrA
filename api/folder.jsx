@@ -17,3 +17,9 @@ export function deleteFolder(folder_id) {
     method: "DELETE",
   });
 }
+export function updateFolder(folder_id, folder_name) {
+  return apiRequest(`/folder/${folder_id}`, {
+    method: "PUT",
+    body: JSON.stringify({ folder_name }),
+  });
+}

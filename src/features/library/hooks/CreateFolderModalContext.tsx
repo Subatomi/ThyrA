@@ -6,6 +6,7 @@ import { Pressable, Alert } from 'react-native';
 import ActionBar from '../components/ActionBar';
 import useFolderModals from './useFolderModals';
 import { deleteFolder } from 'api/folder';
+import { updateFolder } from 'api/folder';
 
 type CreateHandler = (data: { name: string; description?: string }) => void;
 
@@ -16,8 +17,8 @@ type ContextValue = {
   openActionBar: (options?: { onEdit?: () => void; onDelete?: () => void }) => void;
   closeActionBar: () => void;
   isActionBarVisible: boolean;
-  openEditModal: (initial?: { name?: string; description?: string }) => void;
-  openDeleteModal: (name?: string,id?: string) => void;
+  openEditModal: (initial?: { id?: string,name?: string; description?: string }) => void;
+  openDeleteModal: (name?: string, id?: string) => void;
 };
 
 const CreateFolderContext = createContext<ContextValue | null>(null);
@@ -48,6 +49,7 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
     closeDeleteModal,
   } = modals;
 
+
   function handleCreate(data: { name: string; description?: string }) {
     // prefer explicit onCreate prop, otherwise pending/default handlers
     if (onCreate) {
@@ -63,6 +65,34 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
     }
   }
 
+  async function handleEditFolder(
+    data: { name: string; description?: string }
+  ) {
+    if (!editInitial?.id) {
+      Alert.alert("Error", "Folder ID missing");
+      return;
+    }
+
+    if (!data.name || data.name.trim() === "") {
+      Alert.alert("Error", "Folder name cannot be empty");
+      return;
+    }
+
+    try {
+      await updateFolder(editInitial.id, data.name);
+
+      Alert.alert("Success", `"${data.name}" updated successfully`);
+
+      // Update parent state if provided
+      if (onEdit) {
+        onEdit(editInitial.name, data);
+      }
+
+      closeEditModal();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed to update folder");
+    }
+  }
   //Delete Folder function
   async function handleDeleteFolder(name?: string, id?: string) {
     if (!id) {
@@ -104,21 +134,14 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
         initialName={editInitial?.name}
         initialDescription={editInitial?.description}
         onClose={closeEditModal}
-        onSave={(data) => {
-          if (onEdit) {
-            onEdit(editInitial?.name, data);
-          } else {
-            Alert.alert('Folder updated', `"${data.name}" updated`);
-          }
-          closeEditModal();
-        }}
+        onSave={handleEditFolder}
       />
 
       <DeleteFolderModal
         visible={deleteModalVisible}
         folderName={deleteTargetName}
         onClose={closeDeleteModal}
-        onConfirm={() => handleDeleteFolder(deleteTargetName, deleteTargetId)} 
+        onConfirm={() => handleDeleteFolder(deleteTargetName, deleteTargetId)}
       />
     </CreateFolderContext.Provider>
   );
