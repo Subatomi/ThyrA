@@ -35,32 +35,43 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
     >
       <Animated.View style={[{ elevation: 4 }, animatedStyle]} className="bg-white rounded-lg p-4 w-full h-full shadow-lg shadow-gray-200">
         {/* Menu Button - Absolute positioned to top right */}
-        <View className="absolute top-4 right-2 z-10">
-          <Pressable onPress={() => {
-            if (onMenuPress) {
-              onMenuPress()
-              return
-            }
-            openActionBar({
-              onEdit: () => openEditModal({ name: title, description: '' }),
-              onDelete: () => openDeleteModal(title),
-            })
-          }} onLongPress={() => openActionBar({ onEdit: () => openEditModal({ name: title, description: '' }), onDelete: () => openDeleteModal(title) })} className="p-2 active:opacity-50">
-            <MoreVerticalIcon size={24} color="#000" strokeWidth={3} />
-          </Pressable>
-        </View>
+        {title !== "default" && (
+          <View className="absolute top-4 right-2 z-10">
+            <Pressable
+              onPress={() => {
+                if (onMenuPress) {
+                  onMenuPress();
+                  return;
+                }
+                openActionBar({
+                  onEdit: () => openEditModal({ name: title, description: '' }),
+                  onDelete: () => openDeleteModal(title),
+                });
+              }}
+              onLongPress={() =>
+                openActionBar({
+                  onEdit: () => openEditModal({ name: title, description: '' }),
+                  onDelete: () => openDeleteModal(title),
+                })
+              }
+              className="p-2 active:opacity-50"
+            >
+              <MoreVerticalIcon size={24} color="#000" strokeWidth={3} />
+            </Pressable>
+          </View>
+        )}
 
         {/* Folder Icon Container */}
         <View className="items-center justify-center mt-4 ">
           <View className="relative">
             {/* Main Folder Shape */}
-            <Folder 
-              size={100} 
-              color="#FFD100" 
-              fill="#FFD100" 
+            <Folder
+              size={100}
+              color="#FFD100"
+              fill="#FFD100"
             />
             {/* Accent Tab (Visual tweak to match your orange/yellow folder) */}
-            <View 
+            <View
               className="absolute top-[10px] left-[5px] w-8 h-3 rounded-tl-sm rounded-tr-md bg-amber-500"
             />
           </View>
