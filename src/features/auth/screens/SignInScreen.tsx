@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 import { login } from 'api/auth'
 import { Alert } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const SignInScreen: React.FC = () => {
 	const [email, setEmail] = useState('')
@@ -27,6 +28,8 @@ const SignInScreen: React.FC = () => {
 			});
 
 			console.log("Log In success:", response);
+
+			await AsyncStorage.setItem('access_token', response.access_token);
 
 			//navigate after successful signup
 			router.replace("/home");
