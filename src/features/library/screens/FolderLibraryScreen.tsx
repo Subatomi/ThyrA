@@ -4,7 +4,7 @@ import FolderCard from '../components/FolderCardWithSetting';
 import CreateFolderButton from '../components/CreateFolderButton';
 import CreateFolderProvider from '../hooks/CreateFolderModalContext';
 import { useEffect, useState } from 'react';
-import { getFolders } from 'api/folder';
+import { getFolders,createFolder } from 'api/folder';
 
 function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>; onCreate: (data: { name: string; description?: string }) => void; onEdit: (originalName: string | undefined, data: { name: string; description?: string }) => void; onDelete: (name?: string) => void }) {
 
@@ -64,14 +64,33 @@ export default function FolderLibraryScreen() {
     fetchFolders();
   }, []);
 
-  function handleCreate(data: { name: string; description?: string }) {
-    if (!data.name) {
-      Alert.alert('Name required', 'Please provide a folder name.');
-      return;
-    }
-    const id = String(Date.now());
-    setFolders((s) => [{ id, title: data.name, itemCount: 0, date: new Date().toISOString().slice(0, 10), description: data.description }, ...s]);
+  async function handleCreate(data: { name: string; description?: string }) {
+  if (!data.name) {
+    Alert.alert('Name required', 'Please provide a folder name.');
+    return;
   }
+
+  try {
+    // Call backend API
+    const createdFolder = await createFolder(data.name);
+    console.log("Created Folder")
+    console.log(createFolder)
+
+    // Add folder returned from backend to state
+    setFolders((prev) => [
+      {
+        id: createdFolder.id,      // returned by backend
+        title: createdFolder.folder_name,
+        itemCount: 0, 
+        date: new Date().toISOString().slice(0, 10), 
+        description: ""
+      },
+      ...prev,
+    ]);
+  } catch (error: any) {
+    Alert.alert('Error', error.message || 'Could not create folder.');
+  }
+}
 
   function handleEdit(originalName: string | undefined, data: { name: string; description?: string }) {
     setFolders((s) => s.map((f) => (f.title === originalName ? { ...f, title: data.name, description: data.description } : f)));
