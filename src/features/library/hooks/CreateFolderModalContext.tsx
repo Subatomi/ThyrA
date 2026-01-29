@@ -5,6 +5,7 @@ import DeleteFolderModal from '../components/DeleteFolderModal';
 import { Pressable, Alert } from 'react-native';
 import ActionBar from '../components/ActionBar';
 import useFolderModals from './useFolderModals';
+import { deleteFolder } from 'api/folder';
 
 type CreateHandler = (data: { name: string; description?: string }) => void;
 
@@ -16,12 +17,12 @@ type ContextValue = {
   closeActionBar: () => void;
   isActionBarVisible: boolean;
   openEditModal: (initial?: { name?: string; description?: string }) => void;
-  openDeleteModal: (name?: string) => void;
+  openDeleteModal: (name?: string,id?: string) => void;
 };
 
 const CreateFolderContext = createContext<ContextValue | null>(null);
 
-export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: { children: ReactNode; onCreate?: CreateHandler; onEdit?: (originalName: string | undefined, data: { name: string; description?: string }) => void; onDelete?: (name?: string) => void; }) {
+export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: { children: ReactNode; onCreate?: CreateHandler; onEdit?: (originalName: string | undefined, data: { name: string; description?: string }) => void; onDelete?: (name?: string, id?: string) => void; }) {
   const modals = useFolderModals();
 
   const {
@@ -42,6 +43,7 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
     closeEditModal,
     deleteModalVisible,
     deleteTargetName,
+    deleteTargetId,
     openDeleteModal,
     closeDeleteModal,
   } = modals;
@@ -61,6 +63,26 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
     }
   }
 
+  //Delete Folder function
+  async function handleDeleteFolder(name?: string, id?: string) {
+    if (!id) {
+      Alert.alert('Error', 'Folder ID is missing');
+      return;
+    }
+
+    try {
+      await deleteFolder(id); //backend API call
+      Alert.alert('Success', `"${name}" deleted successfully!`);
+
+      //Call onDelete from props to update parent state if available
+      if (onDelete) onDelete(name, id);
+
+      closeDeleteModal();
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to delete folder');
+    }
+  }
+
   return (
     <CreateFolderContext.Provider value={{ open, close, setDefaultHandler, openActionBar, closeActionBar, isActionBarVisible, openEditModal, openDeleteModal }}>
       {children}
@@ -71,7 +93,7 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
           <Pressable className="absolute inset-0" onPress={closeActionBar} />
           <ActionBar
             onEdit={() => { if (actionEditHandler) actionEditHandler(); else Alert.alert('Edit', 'Edit action'); }}
-            onDelete={() => { if (actionDeleteHandler) actionDeleteHandler(); else Alert.alert('Delete', 'Delete action'); }}
+            onDelete={() => { if (actionDeleteHandler) actionDeleteHandler(); else handleDeleteFolder(deleteTargetName, deleteTargetId); }}
             onClose={closeActionBar}
           />
         </>
@@ -96,14 +118,7 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
         visible={deleteModalVisible}
         folderName={deleteTargetName}
         onClose={closeDeleteModal}
-        onConfirm={() => {
-          if (onDelete) {
-            onDelete(deleteTargetName);
-          } else {
-            Alert.alert('Folder deleted', `"${deleteTargetName ?? 'Folder'}" deleted`);
-          }
-          closeDeleteModal();
-        }}
+        onConfirm={() => handleDeleteFolder(deleteTargetName, deleteTargetId)} 
       />
     </CreateFolderContext.Provider>
   );

@@ -17,6 +17,7 @@ export default function useFolderModals() {
   const [editInitial, setEditInitial] = useState<{ name?: string; description?: string } | undefined>(undefined);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteTargetName, setDeleteTargetName] = useState<string | undefined>(undefined);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | undefined>(undefined);
 
   const open = useCallback((onCreate?: CreateHandler) => {
     setPendingHandler(() => onCreate);
@@ -54,14 +55,16 @@ export default function useFolderModals() {
     setEditInitial(undefined);
   }, []);
 
-  const openDeleteModal = useCallback((name?: string) => {
+  const openDeleteModal = useCallback((name?: string, id?: string) => {
     setDeleteTargetName(name);
+    setDeleteTargetId(id);
     setDeleteModalVisible(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setDeleteModalVisible(false);
     setDeleteTargetName(undefined);
+    setDeleteTargetId(undefined);
   }, []);
 
   return {
@@ -85,6 +88,7 @@ export default function useFolderModals() {
     closeEditModal,
     deleteModalVisible,
     deleteTargetName,
+    deleteTargetId,
     openDeleteModal,
     closeDeleteModal,
   } as const;

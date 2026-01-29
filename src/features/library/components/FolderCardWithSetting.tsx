@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Alert ,Pressable } from 'react-native';
 import { useCreateFolder } from '../hooks/CreateFolderModalContext';
 import Animated from 'react-native-reanimated';
 import { MoreVerticalIcon, Folder } from 'lucide-react-native';
 import usePressableAnimation from '../../../hooks/usePressableAnimation';
+import { deleteFolder } from "api/folder";
 
 interface FolderCardProps {
+  id: string
   title: string;
   itemCount: number;
   date: string;
@@ -13,9 +15,20 @@ interface FolderCardProps {
   onMenuPress?: () => void;
 }
 
-const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCardProps) => {
+const FolderCard = ({ id,title, itemCount, date, onPress, onMenuPress }: FolderCardProps) => {
   const { animatedStyle, onPressIn, onPressOut } = usePressableAnimation();
   const { openActionBar, openEditModal, openDeleteModal } = useCreateFolder();
+
+  // // Handler to delete folder
+  // const handleDeleteFolder = async () => {
+  //   try {
+  //     await deleteFolder(id);
+  //     Alert.alert("Success", "Folder deleted successfully!");
+  //     // Remove folder from parent state if callback provided
+  //   } catch (err: any) {
+  //     Alert.alert("Error", err.message || "Failed to delete folder");
+  //   }
+  // };
 
   return (
     <Pressable
@@ -26,7 +39,7 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
             if (onMenuPress) onMenuPress()
             else openEditModal({ name: title, description: '' })
           },
-          onDelete: () => openDeleteModal(title),
+          onDelete: () => openDeleteModal(title,id.toString()),
         })
       }
       onPressIn={onPressIn}
@@ -45,13 +58,13 @@ const FolderCard = ({ title, itemCount, date, onPress, onMenuPress }: FolderCard
                 }
                 openActionBar({
                   onEdit: () => openEditModal({ name: title, description: '' }),
-                  onDelete: () => openDeleteModal(title),
+                  onDelete: () => openDeleteModal(title,id.toString()),
                 });
               }}
               onLongPress={() =>
                 openActionBar({
                   onEdit: () => openEditModal({ name: title, description: '' }),
-                  onDelete: () => openDeleteModal(title),
+                  onDelete: () => openDeleteModal(title,id.toString()),
                 })
               }
               className="p-2 active:opacity-50"

@@ -3,7 +3,7 @@ const BASE_URL = "http://192.168.1.14:8000"; //your ip4 address. Place on env la
 
 export async function apiRequest(endpoint, options = {}) {
   // Get token from AsyncStorage (or SecureStore)
-  const token = await AsyncStorage.getItem('access_token'); 
+  const token = await AsyncStorage.getItem('access_token');
   console.log(token)
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
@@ -14,6 +14,11 @@ export async function apiRequest(endpoint, options = {}) {
     },
     ...options,
   });
+
+
+  if (response.status === 204) {
+    return { detail: "Successfully deleted" };
+  }
 
   const data = await response.json();
 
@@ -32,3 +37,6 @@ export async function apiRequest(endpoint, options = {}) {
 
   return data;
 }
+
+
+

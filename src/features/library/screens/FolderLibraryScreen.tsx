@@ -27,7 +27,7 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array
           columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
           renderItem={({ item }) => (
             <View className="px-2 mb-4" style={{ width: 160 }}>
-              <FolderCard title={item.title} itemCount={item.itemCount} date={item.date} />
+              <FolderCard id = {item.id} title={item.title} itemCount={item.itemCount} date={item.date} />
             </View>
           )}
         />
@@ -75,6 +75,8 @@ export default function FolderLibraryScreen() {
     const createdFolder = await createFolder(data.name);
     console.log("Created Folder")
     console.log(createFolder)
+
+    Alert.alert('Success','Successfully created');
 
     // Add folder returned from backend to state
     setFolders((prev) => [

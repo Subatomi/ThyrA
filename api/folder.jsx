@@ -11,3 +11,9 @@ export function createFolder(folder_name) {
     body: JSON.stringify({ folder_name }),
   });
 }
+
+export function deleteFolder(folder_id) {
+  return apiRequest(`/folder/${folder_id}`, {
+    method: "DELETE",
+  });
+}
