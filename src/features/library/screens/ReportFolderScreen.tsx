@@ -6,6 +6,7 @@ import FloatingActionBar from '../components/FloatingActionBar'
 import CreateFolderProvider, { useCreateFolder } from '../hooks/CreateFolderModalContext'
 import EditReportTitleModal from '../components/EditReportTitleModal'
 import DeleteReportModal from '../components/DeleteReportModal'
+import { ScanSearch } from 'lucide-react-native'
 
 export default function ReportFolderScreen() {
   const [reports, setReports] = useState<Array<{ id: string; title: string; date: string; image: any }>>([
@@ -59,7 +60,7 @@ export default function ReportFolderScreen() {
           <View className="w-12" />
         </View>
 
-        <View className="flex-1 items-center justify-center ">
+        <View className="flex-1 items-center ">
           <FlatList
             data={reports}
             keyExtractor={(item) => item.id}
@@ -80,6 +81,13 @@ export default function ReportFolderScreen() {
               </View>
             )}
           />
+          
+          {/* <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+            <ScanSearch size={48} color="#9CA3AF" />
+            <Text className="text-gray-400 mt-2 text-center">
+              No reports in these folders. Create some reports in this folder to see them here!
+            </Text>
+          </View> */}
         </View>
         
         {showFloatingActions && (

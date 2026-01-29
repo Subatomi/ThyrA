@@ -1,6 +1,7 @@
 import { ScrollView, Text, View } from 'react-native';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useRouter } from 'expo-router';
+import { FileQuestionMark } from 'lucide-react-native';
 import RecentAnalysis from '@/features/library/components/RecentAnalysis';
 
 export default function HomeScreen() {
@@ -32,8 +33,9 @@ export default function HomeScreen() {
         </Text>
         <RecentAnalysis></RecentAnalysis>
         {/* <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
-          <Text className="text-gray-400">
-            No recent tests available.
+          <FileQuestionMark size={48} color="#9CA3AF" />
+          <Text className="text-gray-400 mt-2 text-center">
+            No recent analysis are available. Create some analysis to see them here!
           </Text>
         </View> */}
       </View>

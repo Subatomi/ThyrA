@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ScanSearch } from 'lucide-react-native';
 
 export default function AnalysisScreen() {
   const { image } = useLocalSearchParams() as { image?: string }
@@ -43,6 +44,12 @@ export default function AnalysisScreen() {
         <Text className="font-semibold text-xl text-gray-800 mb-4">
           Result:
         </Text>
+          <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+            <ScanSearch size={48} color="#9CA3AF" />
+            <Text className="text-gray-400 mt-2 text-center">
+              No results are shown. Upload a valid image for analysis to see them here!
+            </Text>
+          </View>
       </View>
 
     </ScrollView>
