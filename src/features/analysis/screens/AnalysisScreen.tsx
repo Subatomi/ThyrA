@@ -101,8 +101,6 @@ export default function AnalysisScreen() {
           onPick={(uri) => setImageUri(uri)}
           onRemove={() => { 
             setImageUri(null)
-            /*setResult(null)
-            setAnalyzedImageUri(null);*/
           }}
         />
       </View>
@@ -159,3 +157,5 @@ export default function AnalysisScreen() {
     </ScrollView>
   );
 }
+
+
