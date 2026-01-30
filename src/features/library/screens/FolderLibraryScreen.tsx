@@ -5,17 +5,9 @@ import CreateFolderButton from '../components/CreateFolderButton';
 import CreateFolderProvider from '../hooks/CreateFolderModalContext';
 import { FolderSearch } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
+import { getFolders,createFolder } from 'api/folder';
 
-type Folder = { id: string; title: string; itemCount: number; date: string; description?: string };
-type CreateData = { name: string; description?: string };
-type ScreenContentProps = {
-  folders: Folder[];
-  onCreate: (data: CreateData) => void;
-  onEdit: (originalName: string | undefined, data: CreateData) => void;
-  onDelete: (name?: string) => void;
-};
-
-function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentProps) {
+function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>; onCreate: (data: { name: string; description?: string }) => void; onEdit: (originalName: string | undefined, data: { name: string; description?: string }) => void; onDelete: (name?: string) => void }) {
 
   return (
     <View className='flex-1 bg-gray-100 p-5'>
@@ -36,7 +28,7 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentPro
           columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
           renderItem={({ item }) => (
             <View className="px-2 mb-4" style={{ width: 160 }}>
-              <FolderCard title={item.title} itemCount={item.itemCount} date={item.date} />
+              <FolderCard id = {item.id} title={item.title} itemCount={item.itemCount} date={item.date} />
             </View>
           )}
         />
@@ -54,20 +46,60 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentPro
 }
 
 export default function FolderLibraryScreen() {
-  const [folders, setFolders] = useState<Folder[]>([
-    { id: '1', title: 'Personal', itemCount: 12, date: '2024-05-15' },
-    { id: '2', title: 'Work', itemCount: 8, date: '2024-03-22' },
-    { id: '3', title: 'Receipts', itemCount: 4, date: '2023-12-01' },
-  ]);
+  const [folders, setFolders] = useState<Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>>([]);
 
-  function handleCreate(data: CreateData) {
-    if (!data.name) {
-      Alert.alert('Name required', 'Please provide a folder name.');
-      return;
+  const fetchFolders = async () => {
+    try {
+      const data = await getFolders(); // [{ id, folder_name, user_id }, ...]
+
+      // Map backend data to frontend folder structure
+      const formattedData = data.map((f: any) => ({
+        id: f.id,
+        title: f.folder_name,            // map folder_name -> title
+        itemCount: 0,                     //backend doesn't return item count
+        date: new Date().toISOString().slice(0, 10), //placeholder date
+        description: '',                  //optional, default empty
+      }));
+
+      setFolders(formattedData);
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
     }
-    const id = String(Date.now());
-    setFolders((s) => [{ id, title: data.name, itemCount: 0, date: new Date().toISOString().slice(0, 10), description: data.description }, ...s]);
+  };
+
+  useEffect(() => {
+    fetchFolders();
+  }, []);
+
+  async function handleCreate(data: { name: string; description?: string }) {
+  if (!data.name) {
+    Alert.alert('Name required', 'Please provide a folder name.');
+    return;
   }
+
+  try {
+    // Call backend API
+    const createdFolder = await createFolder(data.name);
+    console.log("Created Folder")
+    console.log(createFolder)
+
+    Alert.alert('Success','Successfully created');
+
+    // Add folder returned from backend to state
+    setFolders((prev) => [
+      {
+        id: createdFolder.id,      // returned by backend
+        title: createdFolder.folder_name,
+        itemCount: 0, 
+        date: new Date().toISOString().slice(0, 10), 
+        description: ""
+      },
+      ...prev,
+    ]);
+  } catch (error: any) {
+    Alert.alert('Error', error.message || 'Could not create folder.');
+  }
+}
 
   function handleEdit(originalName: string | undefined, data: CreateData) {
     setFolders((s) => s.map((f) => (f.title === originalName ? { ...f, title: data.name, description: data.description } : f)));

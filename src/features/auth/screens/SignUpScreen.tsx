@@ -2,12 +2,52 @@ import React, { useState } from 'react'
 import { View, Text, TextInput, Pressable, Image, ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
+import { signup } from 'api/auth'
+import { Alert } from "react-native";
+
 
 const SignUpScreen: React.FC = () => {
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [confirmPassword, setConfirmPassword] = useState('')
+	const [loading, setLoading] = useState(false);
+	const [firstName, setFirstName] = useState('');
+	const [lastName, setLastName] = useState('');
 	const router = useRouter()
+
+	//Handle SignUp function
+	const handleSignup = async () => {
+		if (!firstName || !lastName || !email || !password || !confirmPassword) {
+			Alert.alert("Missing fields", "Please fill in all fields.");
+			return;
+		}
+
+		if (password !== confirmPassword) {
+			Alert.alert("Password mismatch", "Passwords do not match.");
+			return;
+		}
+
+		try {
+			setLoading(true);
+
+			const response = await signup({
+				first_name: firstName,
+				last_name: lastName,
+				email,
+				password,
+			});
+
+			console.log("Signup success:", response);
+
+			//navigate after successful signup
+			router.replace("/sign-in");
+		} catch (error: any) {
+			Alert.alert("Signup failed", error.message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
 
 	return (
 		<ScrollView contentContainerStyle={{ flexGrow: 1 }} className="bg-gray-100">
@@ -26,6 +66,23 @@ const SignUpScreen: React.FC = () => {
 						keyboardType="email-address"
 						autoCapitalize="none"
 					/>
+
+					<Text className="text-sm font-medium text-gray-700 mb-1">First Name</Text>
+					<TextInput
+						value={firstName}
+						onChangeText={setFirstName}
+						placeholder="Enter your first name"
+						className="border border-gray-300 rounded px-3 py-2 mb-3"
+					/>
+
+					<Text className="text-sm font-medium text-gray-700 mb-1">Last Name</Text>
+					<TextInput
+						value={lastName}
+						onChangeText={setLastName}
+						placeholder="Enter your last name"
+						className="border border-gray-300 rounded px-3 py-2 mb-3"
+					/>
+
 
 					<Text className="text-sm font-medium text-gray-700 mb-1">Password</Text>
 					<TextInput
@@ -46,12 +103,17 @@ const SignUpScreen: React.FC = () => {
 					/>
 
 					<Pressable
-						onPress={() => router.push('/home')}
+						onPress={handleSignup}
+						disabled={loading}
 						accessibilityRole="button"
-						className="bg-red-600 rounded py-3 items-center"
+						className={`rounded py-3 items-center ${
+  							loading ? "bg-red-400" : "bg-red-600"
+						}`}
 						style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
 					>
-						<Text className="text-white font-bold">Confirm</Text>
+						<Text className="text-white font-bold">
+							{loading ? "Creating account..." : "Confirm"}
+						</Text>
 					</Pressable>
 				</View>
 
