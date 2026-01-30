@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { runInference } from 'api/image';
+import DetectionOverlay from '@/components/DetectionOverlay';
 
 export default function AnalysisScreen() {
   const { image } = useLocalSearchParams() as { image?: string }
@@ -14,6 +15,22 @@ export default function AnalysisScreen() {
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    if (!imageUri) return;
+
+    Image.getSize(
+      imageUri,
+      (width, height) => {
+        setImageSize({ width, height });
+      },
+      (error) => {
+        console.error('Failed to get image size:', error);
+      }
+    );
+  }, [imageUri]);
 
 
   const getImageMetaFromUri = (uri: string) => {
@@ -103,11 +120,33 @@ export default function AnalysisScreen() {
         </View>
       </Pressable>
 
-      <View className="w-full mt-6">
-        <Text className="font-semibold text-xl text-gray-800 mb-4">
-          Result:
-        </Text>
-      </View>
+      {result && result.detections?.thyrocytes && imageSize && (
+        <View className="w-full mt-6">
+          <Text className="font-semibold text-xl text-gray-800 mb-3">
+            Detection Result
+          </Text>
+
+          <DetectionOverlay
+            imageUri={imageUri!}
+            thyrocytes={result.detections?.thyrocytes}
+            clusters={result.detections?.clusters}
+            originalWidth={imageSize.width}
+            originalHeight={imageSize.height}
+          />
+          {/* LEGEND */}
+          <View className="flex-row mt-4 justify-start items-center gap-4">
+            <View className="flex-row items-center gap-2">
+              <View className="w-4 h-4 bg-green-500 rounded-sm" />
+              <Text className="text-gray-800 text-sm">Adequate</Text>
+            </View>
+
+            <View className="flex-row items-center gap-2">
+              <View className="w-4 h-4 bg-blue-500 rounded-sm" />
+              <Text className="text-gray-800 text-sm">Inadequate</Text>
+            </View>
+          </View>
+        </View>
+      )}
 
     </ScrollView>
   );
