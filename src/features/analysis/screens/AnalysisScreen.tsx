@@ -95,7 +95,10 @@ export default function AnalysisScreen() {
         <ImageUploadArea
           externalImageUri={imageUri}
           onPick={(uri) => setImageUri(uri)}
-          onRemove={() => setImageUri(null)}
+          onRemove={() => { 
+            setImageUri(null)
+            setResult(null)
+          }}
         />
       </View>
 
@@ -122,7 +125,7 @@ export default function AnalysisScreen() {
 
       {result && result.detections?.thyrocytes && imageSize && (
         <View className="w-full mt-6">
-          <Text className="font-semibold text-xl text-gray-800 mb-3">
+          <Text className="font-semibold text-xl text-gray-800">
             Detection Result
           </Text>
 
@@ -134,7 +137,7 @@ export default function AnalysisScreen() {
             originalHeight={imageSize.height}
           />
           {/* LEGEND */}
-          <View className="flex-row mt-4 justify-start items-center gap-4">
+          <View className="flex-row justify-start items-center gap-4">
             <View className="flex-row items-center gap-2">
               <View className="w-4 h-4 bg-green-500 rounded-sm" />
               <Text className="text-gray-800 text-sm">Adequate</Text>
