@@ -68,9 +68,11 @@ const ImageUploadArea: React.FC<Props> = ({ onPick, onRemove, externalImageUri =
             <Pressable onPress={() => {
               // If an external image is provided, prefer the external onRemove handler.
               // For locally-picked images (managed by the hook), clear the local state instead.
+              
               if (externalImageUri) {
+                setImageUri(null)
                 if (onRemove) onRemove()
-                else setImageUri(null)
+
               } else {
                 // local image — clear local preview
                 setImageUri(null)

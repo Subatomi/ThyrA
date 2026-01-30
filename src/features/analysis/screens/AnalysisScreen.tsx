@@ -17,6 +17,8 @@ export default function AnalysisScreen() {
   const [result, setResult] = useState<any>(null);
 
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+  const [analyzedImageUri, setAnalyzedImageUri] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (!imageUri) return;
@@ -70,6 +72,8 @@ export default function AnalysisScreen() {
 
       const response = await runInference(imagePayload);
       setResult(response);
+
+      setAnalyzedImageUri(imageUri);
     } catch (error: any) {
       Alert.alert("Inference failed", error.message || "Something went wrong");
     } finally {
@@ -97,7 +101,8 @@ export default function AnalysisScreen() {
           onPick={(uri) => setImageUri(uri)}
           onRemove={() => { 
             setImageUri(null)
-            setResult(null)
+            /*setResult(null)
+            setAnalyzedImageUri(null);*/
           }}
         />
       </View>
@@ -123,14 +128,14 @@ export default function AnalysisScreen() {
         </View>
       </Pressable>
 
-      {result && result.detections?.thyrocytes && imageSize && (
+      {result && result.detections?.thyrocytes && imageSize && analyzedImageUri && (
         <View className="w-full mt-6">
           <Text className="font-semibold text-xl text-gray-800">
             Detection Result
           </Text>
 
           <DetectionOverlay
-            imageUri={imageUri!}
+            imageUri={analyzedImageUri}
             thyrocytes={result.detections?.thyrocytes}
             clusters={result.detections?.clusters}
             originalWidth={imageSize.width}
