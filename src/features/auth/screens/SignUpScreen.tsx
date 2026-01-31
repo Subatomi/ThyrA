@@ -102,6 +102,8 @@ const SignUpScreen: React.FC = () => {
 						className="border border-gray-300 rounded px-3 py-2 mb-4"
 					/>
 
+					
+
 					<Pressable
 						onPress={handleSignup}
 						disabled={loading}

@@ -69,6 +69,12 @@ const SignInScreen: React.FC = () => {
 							className="border border-gray-300 rounded px-3 py-2 mb-4"
 						/>
 
+						<View className="w-full flex-row justify-center mb-4">
+							<Pressable onPress={() => router.push('/forgot-password')}>
+								<Text className="text-sm text-red-600">Forgot password?</Text>
+							</Pressable>
+						</View>
+
 						<Pressable
 							onPress={handleLogin}
 							disabled={loading}

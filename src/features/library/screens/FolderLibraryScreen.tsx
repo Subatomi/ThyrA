@@ -101,7 +101,7 @@ export default function FolderLibraryScreen() {
   }
 }
 
-  function handleEdit(originalName: string | undefined, data: CreateData) {
+  function handleEdit(originalName: string | undefined, data: { name: string; description?: string }) {
     setFolders((s) => s.map((f) => (f.title === originalName ? { ...f, title: data.name, description: data.description } : f)));
   }
 

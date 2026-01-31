@@ -5,22 +5,22 @@ import { LucideInfo } from 'lucide-react-native';
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onCreate: (data: { name: string; description?: string }) => void;
+  onCreate: (data: { name: string;}) => void;
 };
 
 export default function CreateFolderModal({ visible, onClose, onCreate }: Props) {
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  {/*const [description, setDescription] = useState('');*/}
 
   useEffect(() => {
     if (!visible) {
       setName('');
-      setDescription('');
+      // setDescription('');
     }
   }, [visible]);
 
   function handleCreate() {
-    const trimmed = { name: name.trim(), description: description.trim() };
+    const trimmed = { name: name.trim()};
     onCreate(trimmed);
   }
 
@@ -43,7 +43,7 @@ export default function CreateFolderModal({ visible, onClose, onCreate }: Props)
               accessibilityLabel="Folder name"
             />
 
-            <Text className="text-sm text-gray-700">Description (optional)</Text>
+            {/* <Text className="text-sm text-gray-700">Description (optional)</Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
@@ -51,7 +51,7 @@ export default function CreateFolderModal({ visible, onClose, onCreate }: Props)
               className="border border-gray-200 rounded-md px-3 py-2 mb-4"
               multiline
               numberOfLines={3}
-            />
+            /> */}
 
             <View className="flex-row justify-end">
               <Pressable onPress={onClose} className="px-4 py-2 mr-2">

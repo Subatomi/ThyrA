@@ -5,6 +5,7 @@ import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react';
 import { runInference } from 'api/image';
+import { ScanSearch } from 'lucide-react-native';
 
 export default function AnalysisScreen() {
   const { image } = useLocalSearchParams() as { image?: string }
