@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState, useEffect } from 'react';
 import { runInference } from 'api/image';
 import DetectionOverlay from '@/components/DetectionOverlay';
+import { ScanSearch } from 'lucide-react-native';
 
 export default function AnalysisScreen() {
   const { image } = useLocalSearchParams() as { image?: string }
@@ -126,33 +127,43 @@ export default function AnalysisScreen() {
         </View>
       </Pressable>
 
-      {result && result.detections?.thyrocytes && imageSize && analyzedImageUri && (
-        <View className="w-full mt-6">
+      <View className="w-full mt-6 gap-4">
           <Text className="font-semibold text-xl text-gray-800">
             Detection Result
           </Text>
 
-          <DetectionOverlay
-            imageUri={analyzedImageUri}
-            thyrocytes={result.detections?.thyrocytes}
-            clusters={result.detections?.clusters}
-            originalWidth={imageSize.width}
-            originalHeight={imageSize.height}
-          />
-          {/* LEGEND */}
-          <View className="flex-row justify-start items-center gap-4">
-            <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 bg-green-500 rounded-sm" />
-              <Text className="text-gray-800 text-sm">Adequate</Text>
-            </View>
+          {result && result.detections?.thyrocytes && imageSize && analyzedImageUri ? (
+            <>
+              <DetectionOverlay
+                imageUri={analyzedImageUri}
+                thyrocytes={result.detections?.thyrocytes}
+                clusters={result.detections?.clusters}
+                originalWidth={imageSize.width}
+                originalHeight={imageSize.height}
+              />
+              {/* LEGEND */}
+              <View className="flex-row justify-start items-center gap-4">
+                <View className="flex-row items-center gap-2">
+                  <View className="w-4 h-4 bg-green-500 rounded-sm" />
+                  <Text className="text-gray-800 text-sm">Adequate</Text>
+                </View>
 
-            <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 bg-blue-500 rounded-sm" />
-              <Text className="text-gray-800 text-sm">Inadequate</Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="w-4 h-4 bg-blue-500 rounded-sm" />
+                  <Text className="text-gray-800 text-sm">Inadequate</Text>
+                </View>
+              </View>
+            </>
+          ) : (
+            <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+              <ScanSearch size={48} color="#9CA3AF" />
+              <Text className="text-gray-400 mt-2 text-center">
+                No results are shown. Upload a valid image for analysis to see them here!
+              </Text>
             </View>
-          </View>
-        </View>
-      )}
+          )}
+      
+      </View>
 
     </ScrollView>
   );

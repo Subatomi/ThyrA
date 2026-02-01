@@ -5,24 +5,23 @@ import { LucideInfo } from 'lucide-react-native';
 type Props = {
   visible: boolean;
   initialName?: string;
-  initialDescription?: string;
   onClose: () => void;
-  onSave: (data: { name: string; description?: string }) => void;
+  onSave: (data: { name: string}) => void;
 };
 
-export default function EditFolderModal({ visible, initialName = '', initialDescription = '', onClose, onSave }: Props) {
+export default function EditFolderModal({ visible, initialName = '', onClose, onSave }: Props) {
   const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription);
+  {/*  const [description, setDescription] = useState(initialDescription);*/}
 
   useEffect(() => {
     if (visible) {
       setName(initialName);
-      setDescription(initialDescription);
+      // setDescription(initialDescription);
     }
-  }, [visible, initialName, initialDescription]);
+  }, [visible, initialName]);
 
   function handleSave() {
-    onSave({ name: name.trim(), description: description.trim() });
+    onSave({ name: name.trim()});
   }
 
   return (
@@ -38,8 +37,8 @@ export default function EditFolderModal({ visible, initialName = '', initialDesc
             <Text className="text-sm text-gray-700">Name</Text>
             <TextInput value={name} onChangeText={setName} placeholder="Folder name" className="border border-gray-200 rounded-md px-3 py-2 mb-3" />
 
-            <Text className="text-sm text-gray-700">Description (optional)</Text>
-            <TextInput value={description} onChangeText={setDescription} placeholder="Brief description" className="border border-gray-200 rounded-md px-3 py-2 mb-4" multiline numberOfLines={3} />
+            {/* <Text className="text-sm text-gray-700">Description (optional)</Text>
+            <TextInput value={description} onChangeText={setDescription} placeholder="Brief description" className="border border-gray-200 rounded-md px-3 py-2 mb-4" multiline numberOfLines={3} /> */}
 
             <View className="flex-row justify-end">
               <Pressable onPress={onClose} className="px-4 py-2 mr-2">

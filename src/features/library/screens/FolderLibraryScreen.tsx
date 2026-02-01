@@ -3,6 +3,7 @@ import BackButton from '../../../components/BackButton';
 import FolderCard from '../components/FolderCardWithSetting';
 import CreateFolderButton from '../components/CreateFolderButton';
 import CreateFolderProvider from '../hooks/CreateFolderModalContext';
+import { FolderSearch } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { getFolders,createFolder } from 'api/folder';
 
@@ -18,7 +19,7 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array
         <View className="w-12" />
       </View>
 
-      <View className='flex-1 items-center justify-center '>
+      <View className='flex-1 items-center '>
         <FlatList
           data={folders}
           keyExtractor={(item) => item.id}
@@ -31,6 +32,12 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array
             </View>
           )}
         />
+        {/* <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+          <FolderSearch size={48} color="#9CA3AF" />
+          <Text className="text-gray-400 mt-2 text-center">
+            No folders here. Create some folders to see them here!
+          </Text>
+        </View> */}
       </View>
 
       <CreateFolderButton />

@@ -9,13 +9,11 @@ import { deleteFolder } from "api/folder";
 interface FolderCardProps {
   id: string
   title: string;
-  itemCount: number;
-  date: string;
   onPress?: () => void;
   onMenuPress?: () => void;
 }
 
-const FolderCard = ({ id,title, itemCount, date, onPress, onMenuPress }: FolderCardProps) => {
+const FolderCard = ({ id,title, onPress, onMenuPress }: FolderCardProps) => {
   const { animatedStyle, onPressIn, onPressOut } = usePressableAnimation();
   const { openActionBar, openEditModal, openDeleteModal } = useCreateFolder();
 
@@ -46,7 +44,7 @@ const FolderCard = ({ id,title, itemCount, date, onPress, onMenuPress }: FolderC
       onPressOut={onPressOut}
       className="w-full max-w-48 h-56 mb-4"
     >
-      <Animated.View style={[{ elevation: 4 }, animatedStyle]} className="bg-white rounded-lg p-4 w-full h-full shadow-lg shadow-gray-200">
+      <Animated.View style={[{ elevation: 4 }, animatedStyle]} className="bg-white rounded-lg p-4 w-full h-fit shadow-lg shadow-gray-200">
         {/* Menu Button - Absolute positioned to top right */}
         {title !== "default" && (
           <View className="absolute top-4 right-2 z-10">
@@ -99,8 +97,6 @@ const FolderCard = ({ id,title, itemCount, date, onPress, onMenuPress }: FolderC
           >
             {title}
           </Text>
-
-          <Text className="text-xs w-full text-center text-gray-800 font-medium">{itemCount} Items <Text className="text-gray-400">|</Text> {date}</Text>
         </View>
       </Animated.View>
     </Pressable>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
-import { Animated, Dimensions, Pressable, Text, View, TouchableOpacity } from 'react-native'
+import { Animated, Dimensions, Pressable, Text, View, TouchableOpacity, Image } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { ChevronLeft, Home,  SearchCheck, Folders, Files, Settings, Info} from 'lucide-react-native'
+import { ChevronLeft, Home,  SearchCheck, Folders, Files, Settings, Info, CircleUser } from 'lucide-react-native'
 import LogoTitle from 'assets/icons/LogoTitle'
 import { useRouter } from 'expo-router'
 
@@ -35,90 +35,119 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
         className="absolute left-0 top-0 bottom-0 bg-white z-50 shadow-lg"
         style={{ transform: [{ translateX }], width: MENU_WIDTH, paddingTop: insets.top - 5, paddingBottom: insets.bottom  }}
       >
-        <View className="flex-1 justify-between p-6">
+        <View className="flex-1 justify-between">
           <View>
             {/* Header with logo and close */}
-            <View className="flex-row items-center justify-between mb-6">
+            <View className="flex-row items-center justify-between mb-6 px-4 pt-5">
               <LogoTitle />
               <TouchableOpacity onPress={onClose} className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center">
                 <ChevronLeft size={20} />
               </TouchableOpacity>
             </View>
 
-            {/* Menu items (static) */}
-            <TouchableOpacity
-              className="flex-row items-center py-3 gap-4"
-              onPress={() => {
-                onClose()
-                setTimeout(() => router.push('/home'), 200)
-              }}
-            >
-              <Home size={20} color="#333" className="mr-3" />
-              <Text className="text-base">Home</Text>
-            </TouchableOpacity>
+            <View className='px-6'>
+              {/* Menu items (static) */}
+              <TouchableOpacity
+                className="flex-row items-center py-3 gap-4"
+                onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/home'), 200)
+                }}
+              >
+                <Home size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Home</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              className="flex-row items-center py-3 gap-4"
-              onPress={() => {
-                onClose()
-                setTimeout(() => router.push('/analysis'), 200)
-              }}
-            >
-              <SearchCheck size={20} color="#333" className="mr-3" />
-              <Text className="text-base">Assess</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-row items-center py-3 gap-4"
+                onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/analysis'), 200)
+                }}
+              >
+                <SearchCheck size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Assess</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              className="flex-row items-center py-3 gap-4"
-              onPress={() => {
-                onClose()
-                setTimeout(() => router.push('/folder'), 200)
-              }}
-            >
-              <Folders size={20} color="#333" className="mr-3" />
-              <Text className="text-base">File Management</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-row items-center py-3 gap-4"
+                onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/folder'), 200)
+                }}
+              >
+                <Folders size={20} color="#333" className="mr-3" />
+                <Text className="text-base">File Management</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              className="flex-row items-center py-3 gap-4"
-              onPress={() => {
-                onClose()
-                setTimeout(() => router.push('/report-folder'), 200)
-              }}
-            >
-              <Files size={20} color="#333" className="mr-3" />
-              <Text className="text-base">Case Management (Temporary)</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-row items-center py-3 gap-4"
+                onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/report-folder'), 200)
+                }}
+              >
+                <Files size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Case Management (Temporary)</Text>
+              </TouchableOpacity>
 
-            <View className="h-3" />
-            <View className="h-px bg-gray-200 my-3" />
+              <View className="h-3" />
+              <View className="h-px bg-gray-200 my-3" />
+                
+              <TouchableOpacity className="flex-row items-center py-3 gap-4" onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/profile'), 200)
+                }}
+              >
+                <CircleUser size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Profile</Text>
+              </TouchableOpacity>    
+              <TouchableOpacity className="flex-row items-center py-3 gap-4" onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/setting'), 200)
+              }}>
+                <Settings size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Settings</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center py-3 gap-4" onPress={() => {}}>
-              <Settings size={20} color="#333" className="mr-3" />
-              <Text className="text-base">Settings</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="flex-row items-center py-3 gap-4" onPress={() => {}}>
-              <Info size={20} color="#333" className="mr-3" />
-              <Text className="text-base">Support</Text>
-            </TouchableOpacity>
+              <TouchableOpacity className="flex-row items-center py-3 gap-4" onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/support'), 200)
+              }}>
+                <Info size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Support</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Bottom profile card */}
-          <View>
+          <View className='px-4 pb-3'>
             <View className="h-px bg-gray-200 my-3" />
-            <TouchableOpacity className="flex-row items-center justify-between py-3">
+            <TouchableOpacity className="flex-row items-center justify-between px-1 mb-3">
               <View className="flex-row items-center">
-                <View className="w-11 h-11 rounded-full bg-red-700 mr-3" />
+                <Image source={require('assets/icons/sample_profile_1.png')} className="w-10 h-10 rounded-full bg-gray-300 mr-3" />
                 <View>
                   <Text className="text-xs text-gray-500">Welcome back 👋</Text>
-                  <Text className="text-base font-bold">User</Text>
+                  <Text className="text-xl font-bold">User</Text>
                 </View>
               </View>
-              <View>
-                <Text className="text-lg text-gray-400">›</Text>
-              </View>
             </TouchableOpacity>
+            <View className="mt-3 px-1">
+              <Pressable
+                onPress={() => {
+                  // onClose()
+                  // // TODO: replace with real logout handler (clear auth, tokens, etc.)
+                  // setTimeout(() => router.push('/'), 200)
+                }}
+                android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
+              >
+                {({ pressed }) => (
+                  <View className="py-2 rounded-md items-center justify-center" style={{ backgroundColor: pressed ? '#991b1b' : '#dc2626' }}>
+                    <Text className="text-white font-semibold">Log out</Text>
+                  </View>
+                )}
+              </Pressable>
+            </View>
           </View>
         </View>
       </Animated.View>

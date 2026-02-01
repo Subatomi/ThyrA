@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, Pressable, Image, ScrollView } from 'react-native'
+import { View, Text, TextInput, Pressable, Image, ScrollView, ImageBackground} from 'react-native'
 import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 import { signup } from 'api/auth'
 import { Alert } from "react-native";
-
+import Background from '@/components/Background'
 
 const SignUpScreen: React.FC = () => {
 	const [email, setEmail] = useState('')
@@ -50,7 +50,8 @@ const SignUpScreen: React.FC = () => {
 
 
 	return (
-		<ScrollView contentContainerStyle={{ flexGrow: 1 }} className="bg-gray-100">
+		<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+			<ImageBackground source={require('assets/img/topographic_background.jpg')} resizeMode="cover" blurRadius={8} className="flex-1 ">
 			<View className="flex-1 items-center justify-center py-16 px-8">
 				<LogoTitleVertical width={200} height={200} className="mb-8" />
 				<Text className="text-2xl font-bold text-black mb-1">Create a free account</Text>
@@ -102,12 +103,14 @@ const SignUpScreen: React.FC = () => {
 						className="border border-gray-300 rounded px-3 py-2 mb-4"
 					/>
 
+					
+
 					<Pressable
 						onPress={handleSignup}
 						disabled={loading}
 						accessibilityRole="button"
 						className={`rounded py-3 items-center ${
-  							loading ? "bg-red-400" : "bg-red-600"
+							loading ? "bg-red-400" : "bg-red-600"
 						}`}
 						style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
 					>
@@ -117,13 +120,14 @@ const SignUpScreen: React.FC = () => {
 					</Pressable>
 				</View>
 
-				<View className="flex-row justify-center mt-4">
-					<Text className="text-sm text-gray-600">Already have an account? </Text>
+				<View className="flex-row justify-center items-center mt-4">
+					<Text className="text-sm text-gray-600">Already have an account?</Text>
 					<Pressable onPress={() => router.push('/sign-in')}>
-						<Text className="text-red-600 font-bold">Log in</Text>
+						<Text className="text-sm text-red-600 font-extrabold ml-1">Log In</Text>
 					</Pressable>
 				</View>
 			</View>
+			</ImageBackground>
 		</ScrollView>
 	)
 }
