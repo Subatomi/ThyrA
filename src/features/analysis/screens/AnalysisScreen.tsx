@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { runInference } from 'api/image';
+import DetectionOverlay from '@/components/DetectionOverlay';
 import { ScanSearch } from 'lucide-react-native';
 
 export default function AnalysisScreen() {
@@ -15,6 +16,24 @@ export default function AnalysisScreen() {
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+  const [analyzedImageUri, setAnalyzedImageUri] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    if (!imageUri) return;
+
+    Image.getSize(
+      imageUri,
+      (width, height) => {
+        setImageSize({ width, height });
+      },
+      (error) => {
+        console.error('Failed to get image size:', error);
+      }
+    );
+  }, [imageUri]);
 
 
   const getImageMetaFromUri = (uri: string) => {
@@ -54,6 +73,8 @@ export default function AnalysisScreen() {
 
       const response = await runInference(imagePayload);
       setResult(response);
+
+      setAnalyzedImageUri(imageUri);
     } catch (error: any) {
       Alert.alert("Inference failed", error.message || "Something went wrong");
     } finally {
@@ -79,7 +100,9 @@ export default function AnalysisScreen() {
         <ImageUploadArea
           externalImageUri={imageUri}
           onPick={(uri) => setImageUri(uri)}
-          onRemove={() => setImageUri(null)}
+          onRemove={() => { 
+            setImageUri(null)
+          }}
         />
       </View>
 
@@ -104,18 +127,44 @@ export default function AnalysisScreen() {
         </View>
       </Pressable>
 
-      <View className="w-full mt-6">
-        <Text className="font-semibold text-xl text-gray-800 mb-4">
-          Result:
-        </Text>
-          <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+      {/* <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
             <ScanSearch size={48} color="#9CA3AF" />
             <Text className="text-gray-400 mt-2 text-center">
               No results are shown. Upload a valid image for analysis to see them here!
             </Text>
+      </View> */}
+
+      {result && result.detections?.thyrocytes && imageSize && analyzedImageUri && (
+        <View className="w-full mt-6">
+          <Text className="font-semibold text-xl text-gray-800">
+            Detection Result
+          </Text>
+
+          <DetectionOverlay
+            imageUri={analyzedImageUri}
+            thyrocytes={result.detections?.thyrocytes}
+            clusters={result.detections?.clusters}
+            originalWidth={imageSize.width}
+            originalHeight={imageSize.height}
+          />
+          {/* LEGEND */}
+          <View className="flex-row justify-start items-center gap-4">
+            <View className="flex-row items-center gap-2">
+              <View className="w-4 h-4 bg-green-500 rounded-sm" />
+              <Text className="text-gray-800 text-sm">Adequate</Text>
+            </View>
+
+            <View className="flex-row items-center gap-2">
+              <View className="w-4 h-4 bg-blue-500 rounded-sm" />
+              <Text className="text-gray-800 text-sm">Inadequate</Text>
+            </View>
           </View>
-      </View>
+          
+        </View>
+      )}
 
     </ScrollView>
   );
 }
+
+
