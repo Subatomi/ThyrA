@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, Pressable, Image, ScrollView } from 'react-native'
+import { View, Text, TextInput, Pressable, Image, ScrollView, ImageBackground } from 'react-native'
 import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 import { login } from 'api/auth'
@@ -42,9 +42,9 @@ const SignInScreen: React.FC = () => {
 	};
 
 	return (
-		<View style={{ flex: 1, position: 'relative' }}>
-			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-				<View className="flex-1 items-center justify-center py-16 px-8">
+		<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+			<ImageBackground source={require('assets/img/topographic_background.jpg')} resizeMode="cover" blurRadius={8} className="flex-1 ">
+					<View className="flex-1 items-center justify-center py-16 px-8">
 					<LogoTitleVertical width={200} height={200} className="mb-8" />
 					<Text className="text-2xl font-bold text-black mb-1">Login to your account</Text>
 					<Text className="text-sm text-gray-600 mb-6">Enter your email and password</Text>
@@ -92,12 +92,12 @@ const SignInScreen: React.FC = () => {
 					<View className="flex-row items-center justify-center mt-4">
 						<Text className="text-sm text-center h-full text-gray-600">Don't have an account? </Text>
 						<Pressable onPress={() => router.push('/sign-up')}>
-							<Text className="text-red-600 font-bold">Sign up</Text>
+							<Text className="text-sm text-red-600 font-extrabold">Sign up</Text>
 						</Pressable>
 					</View>
 				</View>
-			</ScrollView>
-		</View>
+			</ImageBackground>
+		</ScrollView>
 	)
 }
 

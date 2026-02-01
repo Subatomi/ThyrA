@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView } from 'react-native'
+import { View, Text, TextInput, Pressable, ScrollView, ImageBackground } from 'react-native'
 import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 
@@ -16,7 +16,8 @@ const ForgotPasswordScreen: React.FC<Props> = () => {
   }
 
   return (
-    <View style={{ flex: 1, position: 'relative' }}>
+    <View style={{ flex: 1, position: 'relative' }}> 
+      <ImageBackground source={require('assets/img/topographic_background.jpg')} resizeMode="cover" blurRadius={8} className="flex-1 ">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 items-center justify-center py-16 px-8">
           <LogoTitleVertical width={180} height={180} className="mb-6" />
@@ -67,6 +68,7 @@ const ForgotPasswordScreen: React.FC<Props> = () => {
           </View>
         </View>
       </ScrollView>
+      </ImageBackground>
     </View>
   )
 }

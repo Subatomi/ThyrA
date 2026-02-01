@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Svg from 'react-native-svg';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import LogoTitle from 'assets/icons/LogoTitle';
@@ -60,10 +61,18 @@ const OnBoardingScreen = () => {
     if (currentIndex < DATA.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      // After completing onboarding, send user to sign-in page
-      router.push('/sign-in');
+      // After completing onboarding, mark as shown and send user to sign-in page
+      (async () => {
+        try {
+          await AsyncStorage.setItem('onboarding_shown', '1');
+        } catch (e) {
+          // ignore storage errors
+        }
+        router.push('/sign-in');
+      })();
     }
   };
+
 
   const goBack = () => {
     if (currentIndex > 0) {

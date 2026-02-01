@@ -3,17 +3,17 @@ import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useRouter } from 'expo-router';
 import { FileQuestionMark } from 'lucide-react-native';
 import RecentAnalysis from '@/features/library/components/RecentAnalysis';
+import useGreeting from '../hooks/useGreeting';
 
 export default function HomeScreen() {
   const router = useRouter()
+  const greeting = useGreeting()
   return (
     <ScrollView 
       className="flex-1 bg-gray-100" 
       contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
 
-      <Text className="font-medium text-lg text-gray-700 mb-2">
-        Good Morning!
-      </Text>
+      <Text className="font-medium text-lg text-gray-700 mb-2">{greeting}</Text>
       <Text className="font-bold text-4xl text-center text-gray-900">
         {"How can we help\nyou today?"}
       </Text>
