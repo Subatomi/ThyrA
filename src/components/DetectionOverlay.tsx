@@ -135,16 +135,16 @@ export default function DetectionOverlay({
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         width: '100%',
-        aspectRatio: 1,
-        marginTop: 10,
+        height: '100%',
     },
     image: {
         width: '100%',
         height: '100%',
     },
     overlay: {
-    ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFillObject,
     },
 
     // CLUSTERS
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     },
     clusterLabelText: {
         color: 'white',
-        fontSize: 9,
+        fontSize: 7,
         fontWeight: '400',
     },
 
