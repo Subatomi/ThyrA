@@ -30,7 +30,14 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow access to save analysis results to your gallery.",
+          "savePhotosPermission": "Allow saving results to your device."
+        }
+      ]
     ]
   }
 }

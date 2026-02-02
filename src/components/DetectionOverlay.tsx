@@ -73,7 +73,11 @@ export default function DetectionOverlay({
 
     return (
         <View style={styles.container} onLayout={onLayout}>
-            <Image source={{ uri: imageUri }} style={styles.image} resizeMode="contain" />
+            <View style={StyleSheet.absoluteFill}>
+                <Image source={{ uri: imageUri }} style={styles.image} resizeMode="contain" />
+
+                {/* boxes render here */}
+            </View>
 
             {/* CLUSTERS */}
             {clusters.map((c, i) => {
@@ -138,6 +142,9 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: '100%',
+    },
+    overlay: {
+    ...StyleSheet.absoluteFillObject,
     },
 
     // CLUSTERS

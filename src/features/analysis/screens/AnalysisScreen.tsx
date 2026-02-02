@@ -98,7 +98,12 @@ export default function AnalysisScreen() {
       <View className="w-full my-4">
         <ImageUploadArea
           externalImageUri={imageUri}
-          onPick={(uri) => setImageUri(uri)}
+          onPick={(uri) => {
+              setImageUri(uri)
+              setAnalyzedImageUri(null);
+              setResult(null);
+              setImageSize(null);
+          }}
           onRemove={() => { 
             setImageUri(null)
           }}
@@ -157,5 +162,3 @@ export default function AnalysisScreen() {
     </ScrollView>
   );
 }
-
-
