@@ -4,12 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ChevronLeft, Home,  SearchCheck, Folders, Files, Settings, Info, CircleUser } from 'lucide-react-native'
 import LogoTitle from 'assets/icons/LogoTitle'
 import { useRouter } from 'expo-router'
+import useAuth from '@/features/tabs/hooks/useAuth'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const MENU_WIDTH = Math.min(320, SCREEN_WIDTH * 0.8)
 
 export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter()
+  const { logout } = useAuth()
   const translateX = useRef(new Animated.Value(-MENU_WIDTH)).current
   const overlayOpacity = useRef(new Animated.Value(0)).current
   const insets = useSafeAreaInsets()
@@ -89,7 +91,20 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
               >
                 <Files size={20} color="#333" className="mr-3" />
                 <Text className="text-base">Case Management (Temporary)</Text>
+
               </TouchableOpacity>
+
+                            <TouchableOpacity
+                className="flex-row items-center py-3 gap-4"
+                onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/result'), 200)
+                }}
+              >
+                <Files size={20} color="#333" className="mr-3" />
+                <Text className="text-base">Result (Temporary)</Text>
+              </TouchableOpacity>
+
 
               <View className="h-3" />
               <View className="h-px bg-gray-200 my-3" />
@@ -134,11 +149,11 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
             </TouchableOpacity>
             <View className="mt-3 px-1">
               <Pressable
-                onPress={() => {
-                  // onClose()
-                  // // TODO: replace with real logout handler (clear auth, tokens, etc.)
-                  // setTimeout(() => router.push('/'), 200)
-                }}
+                  onPress={async () => {
+                    onClose()
+                    // clear auth and redirect
+                    await logout()
+                  }}
                 android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
               >
                 {({ pressed }) => (

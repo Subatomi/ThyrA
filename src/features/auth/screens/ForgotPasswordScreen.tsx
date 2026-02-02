@@ -35,9 +35,9 @@ const ForgotPasswordScreen: React.FC<Props> = () => {
               autoCapitalize="none"
               className="border border-gray-300 rounded px-3 py-2 mb-3"
             />
-
-            <Pressable onPress={handleSubmit} className={`rounded py-3 items-center ${submitted ? 'bg-gray-300' : 'bg-red-600'}`}>
-              <Text className="text-white font-bold">{submitted ? 'Link Sent' : 'Send reset link'}</Text>
+        
+            <Pressable onPress={() => router.push('/change-password')} className={`rounded py-3 items-center ${submitted ? 'bg-gray-300' : 'bg-red-600'}`}>
+                <Text className="text-white font-bold">{submitted ? 'Link Sent' : 'Send reset link'}</Text>
             </Pressable>
 
             {submitted && (

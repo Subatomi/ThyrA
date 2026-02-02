@@ -22,7 +22,7 @@ export default function HomeScreen() {
         <ImageUploadArea
           preventLocalPreview
           onPick={(uri) => {
-            router.push({ pathname: '/analysis', params: { image: uri } })
+            router.push({ pathname: '/analysis', params: { image: encodeURIComponent(uri) } })
           }}
         />
       </View>
