@@ -19,7 +19,9 @@ export default function AnalysisScreen() {
   const { image } = useLocalSearchParams() as { image?: string }
   const router = useRouter()
 
-  const [imageUri, setImageUri] = useState<string | null>(typeof image === 'string' ? image : null)
+  // decode route-encoded URIs (file:// and other special chars can break route params)
+  const initialImageUri = typeof image === 'string' ? decodeURIComponent(image) : null;
+  const [imageUri, setImageUri] = useState<string | null>(initialImageUri)
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -45,6 +47,13 @@ export default function AnalysisScreen() {
       }
     );
   }, [imageUri]);
+
+  // update when route param changes
+  useEffect(() => {
+    if (typeof image === 'string') {
+      setImageUri(decodeURIComponent(image));
+    }
+  }, [image]);
 
 
   const handleDownload = async () => {
@@ -172,48 +181,56 @@ export default function AnalysisScreen() {
         </View>
       </Pressable>
 
-    {result && result.detections?.thyrocytes && imageSize && analyzedImageUri && (
       <View className="w-full mt-6 gap-4">
-          <Text className="font-semibold text-xl text-gray-800">
-            Detection Result
-          </Text>
+        <Text className="font-semibold text-xl text-gray-800">
+          Detection Result
+        </Text>   
 
-          <View
-            ref={detectionRef}
-            collapsable={false}
-            style={{
-              width: screenWidth - 40, // account for ScrollView padding
-              aspectRatio: imageSize.width / imageSize.height,
-              marginVertical: 10,
-            }}
-            onLayout={() => setIsLayoutReady(true)}
-          >
-            <DetectionOverlay
-              imageUri={analyzedImageUri}
-              thyrocytes={result.detections?.thyrocytes}
-              clusters={result.detections?.clusters}
-              originalWidth={imageSize.width}
-              originalHeight={imageSize.height}
-            />
-          </View>
-
-          {/* LEGEND */}
-          <View className="flex-row justify-start items-center gap-4">
-            <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 bg-green-500 rounded-sm" />
-              <Text className="text-gray-800 text-sm">Adequate</Text>
+        {result && result.detections?.thyrocytes && imageSize && analyzedImageUri ? (
+          <>
+            <View
+              ref={detectionRef}
+              collapsable={false}
+              style={{
+                width: screenWidth - 40, // account for ScrollView padding
+                aspectRatio: imageSize.width / imageSize.height,
+                marginVertical: 10,
+              }}
+              onLayout={() => setIsLayoutReady(true)}
+            >
+              <DetectionOverlay
+                imageUri={analyzedImageUri}
+                thyrocytes={result.detections?.thyrocytes}
+                clusters={result.detections?.clusters}
+                originalWidth={imageSize.width}
+                originalHeight={imageSize.height}
+              />
             </View>
 
-            <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 bg-blue-500 rounded-sm" />
-              <Text className="text-gray-800 text-sm">Inadequate</Text>
+            {/* LEGEND */}
+            <View className="flex-row justify-start items-center gap-4">
+              <View className="flex-row items-center gap-2">
+                <View className="w-4 h-4 bg-green-500 rounded-sm" />
+                <Text className="text-gray-800 text-sm">Adequate</Text>
+              </View>
+
+              <View className="flex-row items-center gap-2">
+                <View className="w-4 h-4 bg-blue-500 rounded-sm" />
+                <Text className="text-gray-800 text-sm">Inadequate</Text>
+              </View>
+
+              <Button title="Download Result" onPress={handleDownload} />
             </View>
+          </>
+        ) : (
+           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+              <ScanSearch size={48} color="#9CA3AF" />
+              <Text className="text-gray-400 mt-2 text-center">
+                No results are shown. Upload a valid image for analysis to see them here!
+              </Text>
           </View>
-
-          <Button title="Download Result" onPress={handleDownload} />
-        </View>
-      )}
-
+        )}
+      </View>
     </ScrollView>
   );
 }

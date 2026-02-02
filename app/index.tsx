@@ -17,8 +17,8 @@ export default function Index() {
         if (!shown) {
           router.replace('/onboarding');
         // Do not know if this is correct?????
-        // } else if (token) {
-        //   router.replace('/home');
+        } else if (token) {
+          router.replace('/home');
         } else {
           router.replace('/sign-in');
         }
