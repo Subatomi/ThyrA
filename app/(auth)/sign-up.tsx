@@ -1,2 +1,2 @@
-export {default}from '../../src/features/auth/screens/SignUpScreen'
+export { default } from '@/features/auth/screens/SignUpScreen'
 

@@ -154,7 +154,6 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
                     // clear auth and redirect
                     await logout()
                   }}
-                android_ripple={{ color: 'rgba(0,0,0,0.08)' }}
               >
                 {({ pressed }) => (
                   <View className="py-2 rounded-md items-center justify-center" style={{ backgroundColor: pressed ? '#991b1b' : '#dc2626' }}>
