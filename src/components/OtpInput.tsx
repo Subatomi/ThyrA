@@ -28,7 +28,7 @@ export default function OtpInput({ email = '', length = 6, onComplete, onGoBack 
       setLoading(true)
       setError('')
       try {
-        await verifyOtp(email, val)
+        await verifyOtp({ email, code: val })
         onComplete?.(val)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Invalid or expired code')

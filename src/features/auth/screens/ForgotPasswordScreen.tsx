@@ -87,7 +87,6 @@ const ForgotPasswordScreen: React.FC<Props> = () => {
     }
   }
 
-  // Keep the visible error text in sync with countdown
   useEffect(() => {
     if (cooldownSeconds && cooldownSeconds > 0) {
       setError(`Please try again in ${cooldownSeconds} second(s).`)

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { updateProfile } from 'api/auth';
+import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
 
 type Props = {
   visible: boolean;
@@ -19,7 +21,15 @@ export default function EditFirstNameModal({ visible, initialValue, onClose, onS
   const handleSave = async () => {
     setSaving(true);
     try {
-      await Promise.resolve(onSave(value.trim()));
+      const first = value.trim();
+      if (!first) {
+        return;
+      }
+      if (__DEV__) console.log('[EditFirstNameModal] updating first_name', first);
+      await updateProfile({ first_name: first });
+      await refreshProfileFromServer();
+      if (__DEV__) console.log('[EditFirstNameModal] update complete, cache refreshed');
+      await Promise.resolve(onSave(first));
       onClose();
     } finally {
       setSaving(false);

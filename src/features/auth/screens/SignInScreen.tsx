@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, Image, ScrollView, ImageBackground } 
 import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 import { login } from 'api/auth'
+import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile'
 import { Alert } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
@@ -28,10 +29,19 @@ const SignInScreen: React.FC = () => {
 			});
 
 			console.log("Log In success:", response);
+			const token = response?.access_token;
+			if (!token || typeof token !== 'string') {
+				throw new Error('Login did not return access_token');
+			}
+			await AsyncStorage.setItem('access_token', token);
+			if (__DEV__) {
+				const stored = await AsyncStorage.getItem('access_token');
+				console.log('[login] saved token length:', stored?.length, 'startsWith:', stored?.slice(0, 12));
+			}
 
-			await AsyncStorage.setItem('access_token', response.access_token);
-
-			//navigate after successful signup
+			// Refresh profile cache before navigating
+			await refreshProfileFromServer();
+			
 			router.replace("/home");
 		} catch (error: any) {
 			console.log(error)

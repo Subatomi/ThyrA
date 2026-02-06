@@ -5,11 +5,29 @@ import BackButton from '@/components/BackButton'
 import { ChevronRight, Moon, Info } from 'lucide-react-native'
 import DeleteAccountModal from '@/features/settings/components/DeleteAccountModal'
 import { useRouter } from 'expo-router'
+import { getProfileCache, formatFullName } from '@/features/profile/services/profileCache'
 
 export default function SettingScreen() {
   const router = useRouter()
   const [darkMode, setDarkMode] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
+    const [email, setEmail] = useState('')
+    const fullName = formatFullName(firstName, lastName, email) || 'User'
+
+    // Hydrate profile details from cache on mount
+    React.useEffect(() => {
+        let mounted = true
+        ;(async () => {
+            const cached = await getProfileCache()
+            if (!mounted || !cached) return
+            setFirstName(cached.firstName)
+            setLastName(cached.lastName)
+            setEmail(cached.email)
+        })()
+        return () => { mounted = false }
+    }, [])
 
   const Row = ({ children, onPress, right }: { children: React.ReactNode; onPress?: () => void; right?: React.ReactNode }) => (
     <Pressable onPress={onPress} className="px-4 py-3 bg-white rounded-lg mb-3" android_ripple={{ color: 'rgba(0,0,0,0.04)' }}>
@@ -36,8 +54,8 @@ export default function SettingScreen() {
                 <View className="flex-row items-center">
                     <Image source={require('assets/icons/sample_profile_1.png')} style={{width: 40, height: 40}} className="rounded-full bg-gray-300 mr-3" />
                     <View>
-                        <Text className="font-medium">Darrell Steward</Text>
-                        <Text className="text-xs text-gray-500">d.steward@mail.com</Text>
+                        <Text className="font-medium">{fullName}</Text>
+                        <Text className="text-xs text-gray-500">{email}</Text>
                     </View>
                 </View>
                 <Pressable onPress={() => router.push('/profile')} className="px-3 py-1 rounded-md bg-gray-100">

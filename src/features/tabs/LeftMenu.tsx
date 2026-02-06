@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Animated, Dimensions, Pressable, Text, View, TouchableOpacity, Image } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ChevronLeft, Home,  SearchCheck, Folders, Files, Settings, Info, CircleUser } from 'lucide-react-native'
 import LogoTitle from 'assets/icons/LogoTitle'
 import { useRouter } from 'expo-router'
 import useAuth from '@/features/tabs/hooks/useAuth'
+import { getProfileDisplayName } from '@/features/profile/services/profileCache'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const MENU_WIDTH = Math.min(320, SCREEN_WIDTH * 0.8)
@@ -15,6 +16,7 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
   const translateX = useRef(new Animated.Value(-MENU_WIDTH)).current
   const overlayOpacity = useRef(new Animated.Value(0)).current
   const insets = useSafeAreaInsets()
+  const [displayName, setDisplayName] = useState<string>('')
 
   useEffect(() => {
     Animated.parallel([
@@ -22,6 +24,16 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
       Animated.timing(overlayOpacity, { toValue: isOpen ? 0.45 : 0, duration: 300, useNativeDriver: true }),
     ]).start()
   }, [isOpen, overlayOpacity, translateX])
+
+  // Load display name when the menu opens or on mount
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const name = await getProfileDisplayName()
+      if (mounted) setDisplayName(name || 'User')
+    })()
+    return () => { mounted = false }
+  }, [isOpen])
 
   return (
     <>
@@ -143,7 +155,7 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
                 <Image source={require('assets/icons/sample_profile_1.png')} className="w-10 h-10 rounded-full bg-gray-300 mr-3" />
                 <View>
                   <Text className="text-xs text-gray-500">Welcome back 👋</Text>
-                  <Text className="text-xl font-bold">User</Text>
+                  <Text className="text-xl font-bold">{displayName}</Text>
                 </View>
               </View>
             </TouchableOpacity>
