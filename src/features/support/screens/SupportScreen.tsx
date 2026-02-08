@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Linking } from 'react-native';
 import BackButton from '@/components/BackButton';
 import FAQItem from '@/features/support/components/FAQItem';
 
@@ -16,15 +16,19 @@ export default function SupportScreen() {
   const [sending, setSending] = useState(false);
 
   const submitSupport = async () => {
-    if (!message.trim()) return Alert.alert('Please describe your issue');
-    setSending(true);
+    const supportEmail = 'ladera.portfolio@gmail.com';
+    const subject = 'ThyrA Support Request';
+    const body = message.trim() || '';
+    const url = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     try {
-      // mock request
-      await new Promise((r) => setTimeout(r, 800));
-      setMessage('');
-      Alert.alert('Request submitted', 'We received your message and will respond via email.');
-    } finally {
-      setSending(false);
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        Alert.alert('Email app not available', 'Please configure an email application on your device.');
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (e) {
+      Alert.alert('Could not open email', 'Please try again or contact support directly at ' + supportEmail);
     }
   };
 
@@ -62,7 +66,7 @@ export default function SupportScreen() {
               editable={!sending}
             />
             <Pressable className={`py-3 rounded-md ${sending ? 'bg-gray-400' : 'bg-red-600'}`} onPress={submitSupport} disabled={sending}>
-              <Text className="text-center text-white font-semibold">Send</Text>
+              <Text className="text-center text-white font-semibold">Email Support</Text>
             </Pressable>
           </View>
         </View>
@@ -72,9 +76,11 @@ export default function SupportScreen() {
           <Text className="text-lg font-semibold mb-2">Contact Info</Text>
           <View className="bg-white rounded-md p-3">
             <Text className="font-semibold">Email</Text>
-            <Text className="text-sm text-gray-600 mb-2">support@example.com</Text>
+            <Text className="text-sm text-gray-600 mb-2">
+            ladera.portfolio@gmail.com
+            </Text>
             <Text className="font-semibold">Phone</Text>
-            <Text className="text-sm text-gray-600">+1 (555) 555-0123</Text>
+            <Text className="text-sm text-gray-600">+63 992 932 2972</Text>
           </View>
         </View>
 
@@ -82,3 +88,4 @@ export default function SupportScreen() {
     </SafeAreaView>
   );
 }
+

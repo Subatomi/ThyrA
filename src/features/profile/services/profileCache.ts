@@ -30,14 +30,14 @@ export async function getProfileCache(): Promise<UserProfileCache | null> {
 }
 
 export async function setProfileCache(profile: UserProfileCache): Promise<void> {
-  if (__DEV__) console.log('[profileCache] set', profile);
+  // if (__DEV__) console.log('[profileCache] set', profile);
   await AsyncStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profile));
 }
 
 export async function updateProfileCache(partial: Partial<UserProfileCache>): Promise<UserProfileCache | null> {
   const existing = await getProfileCache();
   const next = { ...(existing ?? { firstName: '', lastName: '', email: '' }), ...partial };
-  if (__DEV__) console.log('[profileCache] update', partial, '->', next);
+  // if (__DEV__) console.log('[profileCache] update', partial, '->', next);
   await setProfileCache(next);
   return next;
 }

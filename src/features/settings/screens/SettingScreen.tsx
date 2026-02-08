@@ -78,7 +78,7 @@ export default function SettingScreen() {
         </Row>*/}
 
 
-        <Row>
+        {/* <Row>
             <View className='flex-row items-center justify-between w-full'>
                 <Text className="font-medium">Theme</Text>
                 <View>
@@ -100,7 +100,7 @@ export default function SettingScreen() {
                     </View>
                 </View>
             </View>
-        </Row>
+        </Row> */}
 
         {/* Support / About */}
         <Text className="text-xs text-gray-500 mb-3 mt-4">SUPPORT</Text>
@@ -135,12 +135,6 @@ export default function SettingScreen() {
                 <DeleteAccountModal
                     visible={showDeleteModal}
                     onClose={() => setShowDeleteModal(false)}
-                    onDelete={async (password: string) => {
-                        // mock delete: require password 'password123'
-                        await new Promise((r) => setTimeout(r, 700))
-                        if (password !== 'password123') throw new Error('Password incorrect')
-                        // TODO: call backend delete API and handle cleanup
-                    }}
                 />
       </View>
     </SafeAreaView>

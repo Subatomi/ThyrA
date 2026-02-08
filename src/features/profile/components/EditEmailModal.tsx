@@ -44,9 +44,15 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
         setError('Please enter a valid email');
         return;
       }
-      if (__DEV__) console.log('[EditEmailModal] startEmailChange', newEmail);
-      await startEmailChange({ new_email: newEmail });
+      if (!password) {
+        setError('Password is required');
+        return;
+      }
+      // if (__DEV__) console.log('[EditEmailModal] startEmailChange', newEmail);
+      await startEmailChange({ new_email: newEmail, password });
       setVerificationSent(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not send verification');
     } finally {
       setSaving(false);
     }
@@ -64,7 +70,6 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
       await verifyEmailChange({ new_email: newEmail, code });
       await refreshProfileFromServer();
       onClose();
-      router.push('/profile');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Verification failed');
     } finally {

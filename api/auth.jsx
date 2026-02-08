@@ -66,3 +66,10 @@ export function verifyEmailChange(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function deleteAccount(payload) {
+  return apiRequest("/auth/delete-account", {
+    method: "DELETE",
+    body: JSON.stringify(payload),
+  });
+}
