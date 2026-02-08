@@ -132,7 +132,6 @@ export function CreateFolderProvider({ children, onCreate, onEdit, onDelete }: {
       <EditFolderModal
         visible={editModalVisible}
         initialName={editInitial?.name}
-        initialDescription={editInitial?.description}
         onClose={closeEditModal}
         onSave={handleEditFolder}
       />

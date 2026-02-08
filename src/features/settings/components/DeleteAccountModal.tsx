@@ -1,13 +1,18 @@
 import React, { useState } from 'react'
 import { Modal, View, Text, Pressable, TextInput, Alert } from 'react-native'
+import { deleteAccount } from 'api/auth'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useRouter, useNavigation } from 'expo-router'
+import { CommonActions } from '@react-navigation/native'
 
 type Props = {
   visible: boolean
   onClose: () => void
-  onDelete: (password: string) => Promise<void>
 }
 
-export default function DeleteAccountModal({ visible, onClose, onDelete }: Props) {
+export default function DeleteAccountModal({ visible, onClose }: Props) {
+  const router = useRouter()
+  const navigation = useNavigation()
   const [password, setPassword] = useState('')
   const [confirmPhrase, setConfirmPhrase] = useState('')
   const REQUIRED_PHRASE = 'DELETE ACCOUNT'
@@ -17,11 +22,30 @@ export default function DeleteAccountModal({ visible, onClose, onDelete }: Props
     if (confirmPhrase !== REQUIRED_PHRASE) return
     setLoading(true)
     try {
-      await onDelete(password)
+      await deleteAccount({ password })
       Alert.alert('Account deleted', 'Your account deletion request was processed.')
       setPassword('')
       setConfirmPhrase('')
       onClose()
+      // Clear auth token(s) and navigate to sign-in
+      try {
+        await AsyncStorage.removeItem('access_token')
+      } catch {}
+      // Reset navigation stack so back cannot return to previous screens
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: '(auth)',
+              state: {
+                index: 0,
+                routes: [{ name: 'sign-in' }],
+              },
+            },
+          ],
+        })
+      )
     } catch (e: any) {
       Alert.alert('Error', e?.message || 'Deletion failed')
     } finally {
@@ -35,17 +59,6 @@ export default function DeleteAccountModal({ visible, onClose, onDelete }: Props
         <View className="bg-white rounded-lg p-4">
           <Text className="text-lg font-bold mb-2">Delete account</Text>
           <Text className="text-gray-700 mb-3">This will permanently delete your account and all associated data. This action cannot be undone.</Text>
-
-          {/* Uncomment these buttons when implementing data export/request backend */}
-          {/*
-          <Pressable style={{ backgroundColor: '#f3f4f6', padding: 10, borderRadius: 8, marginBottom: 8 }}>
-            <Text>Download my data</Text>
-          </Pressable>
-
-          <Pressable style={{ backgroundColor: '#f3f4f6', padding: 10, borderRadius: 8, marginBottom: 8 }}>
-            <Text>Request data copy</Text>
-          </Pressable>
-          */}
 
           <Text className="font-semibold mb-2">Re-enter your password</Text>
           <TextInput

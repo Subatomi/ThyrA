@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, Pressable, ScrollView, ImageBackground, Alert } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
+import { resetPassword } from 'api/auth'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 
 export default function ChangePasswordScreen() {
@@ -9,8 +10,13 @@ export default function ChangePasswordScreen() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { email } = useLocalSearchParams<{ email?: string }>()
 
   function validate() {
+    if (!email) {
+      Alert.alert('Missing email', 'Email not found. Please restart the reset flow.')
+      return false
+    }
     if (!newPassword || !confirmPassword) {
       Alert.alert('Missing fields', 'Please fill in all fields.')
       return false
@@ -30,10 +36,9 @@ export default function ChangePasswordScreen() {
     if (!validate()) return
     setLoading(true)
     try {
-      // TODO: wire real API call to change password
-      await new Promise((res) => setTimeout(res, 900))
-      Alert.alert('Success', 'Your password has been changed.')
-      router.replace('/profile')
+      await resetPassword({ email: String(email), new_password: newPassword })
+      Alert.alert('Success', 'Your password has been changed. Please sign in.')
+      router.replace('/sign-in')
     } catch (err: any) {
       console.error(err)
       Alert.alert('Error', err?.message || 'Failed to change password')
@@ -71,10 +76,17 @@ export default function ChangePasswordScreen() {
               className="border border-gray-300 rounded px-3 py-2 mb-4"
             />
 
-            <Pressable onPress={handleChange} disabled={loading}
+            <Pressable onPress={handleChange} disabled={loading || !newPassword || !confirmPassword || newPassword !== confirmPassword || !email}
             >
                   {({ pressed }) => (
-                    <View className="py-2 rounded-md items-center justify-center" style={{ backgroundColor: pressed ? '#991b1b' : '#dc2626' }}>
+                    <View
+                      className="py-2 rounded-md items-center justify-center"
+                      style={{
+                        backgroundColor: pressed ? '#991b1b' : (loading || !newPassword || !confirmPassword || newPassword !== confirmPassword || !email ? '#d1d5db' : '#dc2626'),
+                        opacity: loading || !newPassword || !confirmPassword || newPassword !== confirmPassword || !email ? 0.6 : 1,
+                        transform: [{ scale: pressed ? 0.98 : 1 }],
+                      }}
+                    >
                       <Text className="text-white font-semibold">{loading ? 'Updating...' : 'Change password'}</Text>
                     </View>
                   )}

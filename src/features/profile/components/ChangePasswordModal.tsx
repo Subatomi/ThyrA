@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
-
+import { changePassword } from 'api/auth';
 type Result = { success: boolean; error?: string };
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  // Attempt to change password. Returns {success, error}
-  onChangePassword: (currentPassword: string, newPassword: string) => Promise<Result>;
 };
 
-export default function ChangePasswordModal({ visible, onClose, onChangePassword }: Props) {
+
+export default function ChangePasswordModal({ visible, onClose }: Props) {
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -37,13 +36,12 @@ export default function ChangePasswordModal({ visible, onClose, onChangePassword
 
     setSaving(true);
     try {
-      const res = await onChangePassword(current, password);
-      if (!res.success) {
-        setError(res.error || 'Unable to change password');
-        return;
-      }
+      const res = await changePassword({ current_password: current, new_password: password });
       setSuccess(true);
-    } finally {
+    } catch (error: any) {
+      setSuccess(false);
+      setError(error.message || 'Failed to change password');
+    }finally {
       setSaving(false);
     }
   };
@@ -63,10 +61,11 @@ export default function ChangePasswordModal({ visible, onClose, onChangePassword
             </View>
           ) : (
             <>
+              {error ? <Text className="text-red-600 mb-2">{error}</Text> : null}
               <TextInput value={current} onChangeText={setCurrent} secureTextEntry placeholder="Current password" className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
               <TextInput value={password} onChangeText={setPassword} secureTextEntry placeholder="New password" className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
               <TextInput value={confirm} onChangeText={setConfirm} secureTextEntry placeholder="Confirm new password" className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
-              {error ? <Text className="text-red-600 mb-2">{error}</Text> : null}
+
 
               <Pressable className="bg-green-600 py-2 px-4 rounded-md mb-2" onPress={handleChange} disabled={saving}>
                 {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center">Change password</Text>}

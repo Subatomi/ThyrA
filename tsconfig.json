@@ -3,6 +3,7 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "strict": true,
+    "allowJs": true,
     "types": ["nativewind/types"],
     "baseUrl": ".",
     "paths": {
@@ -11,7 +12,8 @@
       "@components/*": ["src/components/*"],
       "@hooks/*": ["src/hooks/*"],
       "@constants/*": ["src/constants/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@/api/*": ["api/*"]
     }
   }
 }

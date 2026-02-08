@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, ActivityIndicator, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import { Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import OtpBoxes from '@/components/OtpBoxes';
+import { startEmailChange, verifyEmailChange } from 'api/auth';
+import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
 
 type SendResult = { success: boolean; error?: string };
 
@@ -12,11 +17,16 @@ type Props = {
 };
 
 export default function EditEmailModal({ visible, initialValue, onClose, onSendVerification }: Props) {
+  const router = useRouter();
   const [email, setEmail] = useState(initialValue);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+
+  const screenWidth = Dimensions.get('window').width;
+  const boxSize = (screenWidth - 80) / 6 - 8; // match OtpInput sizing
 
   useEffect(() => {
     setEmail(initialValue);
@@ -29,40 +39,77 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
     setError(null);
     setSaving(true);
     try {
-      const res = await onSendVerification(email.trim(), password);
-      if (!res.success) {
-        setError(res.error || 'Failed to re-authenticate');
+      const newEmail = email.trim();
+      if (!newEmail) {
+        setError('Please enter a valid email');
         return;
       }
+      if (!password) {
+        setError('Password is required');
+        return;
+      }
+      // if (__DEV__) console.log('[EditEmailModal] startEmailChange', newEmail);
+      await startEmailChange({ new_email: newEmail, password });
       setVerificationSent(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not send verification');
     } finally {
       setSaving(false);
     }
   };
 
+  const handleVerify = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      const newEmail = email.trim();
+      if (!newEmail || code.length !== 6) {
+        setError('Enter the 6-digit code');
+        return;
+      }
+      await verifyEmailChange({ new_email: newEmail, code });
+      await refreshProfileFromServer();
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Verification failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
         <View className="bg-white rounded-t-xl p-4 border-t border-gray-200">
-          <Text className="text-lg font-semibold mb-3">Change Email</Text>
 
           {verificationSent ? (
             <View>
-              <Text className="mb-3">Verification sent to {email}</Text>
-              <Pressable className="bg-green-600 py-2 px-4 rounded-md" onPress={onClose}>
-                <Text className="text-white text-center">Done</Text>
-              </Pressable>
+              <Text className="text-lg font-semibold mb-1">OTP verification sent</Text>
+              <Text className="">Enter the 6-digit code sent to {email}</Text>
+              {!!error && (
+                <Text className="text-red-600 mb-2 text-center">{error}</Text>
+              )}
+              <OtpBoxes length={6} boxSize={boxSize} onComplete={setCode} />
+              <View className='flex-row justify-end'>
+                
+                <Pressable className="py-2 px-4" onPress={() => { onClose()}}><Text className="text-center">Cancel</Text></Pressable>
+                <Pressable className="bg-green-600 py-2 px-4 rounded-md disabled:opacity-60" onPress={handleVerify} disabled={saving || code.length !== 6}>
+                  <Text className="text-white text-center">{saving ? 'Verifying...' : 'Confirm'}</Text>
+                </Pressable>
+              </View>
             </View>
           ) : (
             <>
-              <TextInput value={email} onChangeText={setEmail} keyboardType="email-address" className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
+              <Text className="text-lg font-semibold mb-3">Change Email</Text>
+              <TextInput onChangeText={setEmail} keyboardType="email-address" placeholder="Enter new email"  className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
               <TextInput value={password} onChangeText={setPassword} secureTextEntry placeholder="Current password" className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
               {error ? <Text className="text-red-600 mb-2">{error}</Text> : null}
 
-              <Pressable className="bg-green-600 py-2 px-4 rounded-md mb-2" onPress={handleSend} disabled={saving}>
+                <Pressable className="bg-green-600 py-2 px-4 rounded-md mb-2 disabled:opacity-60" onPress={handleSend} disabled={saving}>
                 {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center">Send verification</Text>}
               </Pressable>
-              <Pressable className="py-2 px-4" onPress={onClose}><Text className="text-center">Cancel</Text></Pressable>
+              <Pressable className="py-2 px-4" onPress={() => { onClose()}}><Text className="text-center">Cancel</Text></Pressable>
             </>
           )}
         </View>
@@ -70,3 +117,5 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
     </Modal>
   );
 }
+
+ 

@@ -8,7 +8,7 @@ import EditFirstNameModal from '@/features/profile/components/EditFirstNameModal
 import EditLastNameModal from '@/features/profile/components/EditLastNameModal';
 import EditEmailModal from '@/features/profile/components/EditEmailModal';
 import ChangePasswordModal from '@/features/profile/components/ChangePasswordModal';
-import { styles } from '@/features/tabs/TabHeader';
+import { getProfileCache, formatFullName } from '../services/profileCache';
 
 const AvatarPlaceholder = () => (
   <View style={{ backgroundColor: 'rgba(255,255,255,0.18)' }} className="w-[88px] h-[88px] rounded-full items-center justify-center">
@@ -22,8 +22,20 @@ export default function ProfileDashboardScreen() {
   // TODO: replace with real user data + handlers
   const [firstName, setFirstName] = useState('Jhon');
   const [lastName, setLastName] = useState('Doe');
-  const fullName = `${firstName} ${lastName}`.trim();
   const [email, setEmail] = useState('jhondoe@example.com');
+  const fullName = formatFullName(firstName, lastName, email) || 'User';
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const cached = await getProfileCache();
+      if (!mounted || !cached) return;
+      setFirstName(cached.firstName);
+      setLastName(cached.lastName);
+      setEmail(cached.email);
+    })();
+    return () => { mounted = false; };
+  }, []);
   const [isEditing, setIsEditing] = useState(false);
 
   // modal visibility flags
@@ -103,21 +115,21 @@ export default function ProfileDashboardScreen() {
             <View className="mt-3">
               <Text className="text-lg font-extrabold mb-2">Details</Text>
               <View className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100">
+                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100" onPress={() => setFirstModalVisible(true)}>
                   <View>
                     <Text className="text-xs text-gray-500">First name</Text>
                     <Text className="text-base text-gray-800">{firstName}</Text>
                   </View>
                 </Pressable>
 
-                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100">
+                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100" onPress={() => setLastModalVisible(true)}>
                   <View className='flex-1'>
                     <Text className="text-xs text-gray-500">Last name</Text>
                     <Text className="text-base text-gray-800">{lastName}</Text>
                   </View>
                 </Pressable>
 
-                <Pressable className="flex-row items-center justify-between px-4 py-4">
+                <Pressable className="flex-row items-center justify-between px-4 py-4" onPress={() => setEmailModalVisible(true)}>
                   <View className='flex-1'>
                     <Text className="text-xs text-gray-500">Email</Text>
                     <Text className="text-base text-gray-800">{email}</Text>
@@ -131,7 +143,7 @@ export default function ProfileDashboardScreen() {
       <EditFirstNameModal visible={firstModalVisible} initialValue={firstName} onClose={() => setFirstModalVisible(false)} onSave={handleSaveFirst} />
       <EditLastNameModal visible={lastModalVisible} initialValue={lastName} onClose={() => setLastModalVisible(false)} onSave={handleSaveLast} />
       <EditEmailModal visible={emailModalVisible} initialValue={email} onClose={() => setEmailModalVisible(false)} onSendVerification={handleSendEmailVerification} />
-      <ChangePasswordModal visible={passwordModalVisible} onClose={() => setPasswordModalVisible(false)} onChangePassword={handleChangePassword} />
+      <ChangePasswordModal visible={passwordModalVisible} onClose={() => setPasswordModalVisible(false)}/>
     </View>
   );
 }
