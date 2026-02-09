@@ -51,7 +51,15 @@ export default function AnalysisScreen() {
   // update when route param changes
   useEffect(() => {
     if (typeof image === 'string') {
-      setImageUri(decodeURIComponent(image));
+      //setImageUri(decodeURIComponent(image));
+      const decoded = decodeURIComponent(image)
+
+      setImageUri(decoded)
+      setAnalyzedImageUri(null)
+      setResult(null)
+      setImageSize(null)
+
+      
     }
   }, [image]);
 
