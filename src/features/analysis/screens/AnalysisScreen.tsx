@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
@@ -16,6 +16,11 @@ import { Dimensions } from 'react-native';
 
 
 export default function AnalysisScreen() {
+  type FolderType = {
+    id: string;
+    name: string;
+    count: number;
+  };
   const { image } = useLocalSearchParams() as { image?: string }
   const router = useRouter()
 
@@ -33,6 +38,23 @@ export default function AnalysisScreen() {
   const [isLayoutReady, setIsLayoutReady] = useState(false);
 
   const screenWidth = Dimensions.get('window').width;
+
+  const [showFolderPopup, setShowFolderPopup] = useState(false)
+  const [selectedFolder, setSelectedFolder] = useState(null)
+
+  //Sample folder data
+  const folders = [
+    { id: '1', name: 'Nature Photos', count: 24 },
+    { id: '2', name: 'Portraits', count: 12 },
+    { id: '3', name: 'Travel', count: 8 },
+    { id: '4', name: 'Work Projects', count: 15 },
+    { id: '5', name: 'Personal', count: 32 },
+    { id: '6', name: 'Architecture', count: 7 },
+  ]
+
+  const handleSaveImage = () => {
+    setShowFolderPopup(true)
+  }
 
   useEffect(() => {
     if (!imageUri) return;
@@ -59,7 +81,7 @@ export default function AnalysisScreen() {
       setResult(null)
       setImageSize(null)
 
-      
+
     }
   }, [image]);
 
@@ -139,6 +161,20 @@ export default function AnalysisScreen() {
     }
   };
 
+
+  const FolderItem = ({ folder }: { folder: FolderType }) => (
+    <TouchableOpacity
+      className="p-4 border-b border-gray-200 active:bg-gray-50"
+    >
+      <View className="flex-row justify-between items-center">
+        <View className="flex-1">
+          <Text className="text-base font-medium text-gray-800">{folder.name}</Text>
+          <Text className="text-sm text-gray-500">{folder.count} images</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  )
+
   return (
     <ScrollView className="flex-1 bg-gray-100"
       contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
@@ -192,7 +228,7 @@ export default function AnalysisScreen() {
       <View className="w-full mt-6 gap-4">
         <Text className="font-semibold text-xl text-gray-800">
           Detection Result
-        </Text>   
+        </Text>
 
         {result && result.detections?.thyrocytes && imageSize && analyzedImageUri ? (
           <>
@@ -226,19 +262,49 @@ export default function AnalysisScreen() {
                 <View className="w-4 h-4 bg-blue-500 rounded-sm" />
                 <Text className="text-gray-800 text-sm">Inadequate</Text>
               </View>
-
-              <Button title="Download Result" onPress={handleDownload} />
             </View>
+            <Button title="Download Result" onPress={handleDownload} />
+            <Button title="Save Image" onPress={handleSaveImage} />
           </>
         ) : (
-           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
-              <ScanSearch size={48} color="#9CA3AF" />
-              <Text className="text-gray-400 mt-2 text-center">
-                No results are shown. Upload a valid image for analysis to see them here!
-              </Text>
+          <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+            <ScanSearch size={48} color="#9CA3AF" />
+            <Text className="text-gray-400 mt-2 text-center">
+              No results are shown. Upload a valid image for analysis to see them here!
+            </Text>
           </View>
         )}
       </View>
+
+
+      {/* Folder Selection Popup */}
+      <Modal
+        visible={showFolderPopup}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFolderPopup(false)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl max-h-3/4">
+            <View className="p-4 border-b border-gray-200">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-xl font-bold text-gray-900">Select Folder</Text>
+                <TouchableOpacity onPress={() => setShowFolderPopup(false)}>
+                  <Text className="text-lg text-gray-500">✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Text className="text-gray-600">Choose where to save the image</Text>
+            </View>
+
+            <FlatList
+              data={folders}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <FolderItem folder={item} />}
+            />
+
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
