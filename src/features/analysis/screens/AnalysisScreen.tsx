@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
@@ -12,10 +12,16 @@ import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { Button } from 'react-native';
 import { Dimensions } from 'react-native';
+import { getFolders } from '../../../../api/folder'
+import { uploadImage } from '../../../../api/image';
 
 
 
 export default function AnalysisScreen() {
+  type FolderType = {
+    id: string;
+    folder_name: string;
+  };
   const { image } = useLocalSearchParams() as { image?: string }
   const router = useRouter()
 
@@ -34,6 +40,77 @@ export default function AnalysisScreen() {
 
   const screenWidth = Dimensions.get('window').width;
 
+  const [showFolderPopup, setShowFolderPopup] = useState(false)
+  const [showFileNamePopup, setShowFileNamePopup] = useState(false)
+  const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null)
+  const [fileName, setFileName] = useState('')
+
+
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [foldersLoading, setFoldersLoading] = useState(false)
+
+
+
+  const handleSaveImage = async () => {
+    try {
+      setLoading(true)
+      const response = await getFolders()
+      console.log(response)
+      setFolders(response)
+      setShowFolderPopup(true)
+    } catch (err) {
+      Alert.alert("Error", "Failed to load folders")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleFolderSelect = (folder: FolderType) => {
+    // First, select the folder and show file name input popup
+    setSelectedFolder(folder)
+    setFileName('') // Reset file name
+    setShowFolderPopup(false)
+    setShowFileNamePopup(true)
+  }
+
+  const handleConfirmFileName = async () => {
+    if (!imageUri || !result || !selectedFolder) {
+      Alert.alert("Error", "No analyzed image to save.")
+      return
+    }
+
+    if (!fileName.trim()) {
+      Alert.alert("Error", "Please enter a file name.")
+      return
+    }
+
+    try {
+      setLoading(true)
+      setShowFileNamePopup(false)
+
+      const imagePayload = getImageMetaFromUri(imageUri)
+      
+      // Use user-entered file name, but ensure it has an extension
+      const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
+
+      await uploadImage({
+        image: imagePayload,
+        imageName: finalFileName, // Use the custom file name
+        folderId: selectedFolder.id,
+        detectionResult: result?.detections,
+      })
+
+      Alert.alert("Success", "Image saved successfully!")
+      setSelectedFolder(null)
+      setFileName('')
+    } catch (err) {
+      console.error(err)
+      Alert.alert("Upload failed", "Could not save image.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (!imageUri) return;
 
@@ -51,7 +128,15 @@ export default function AnalysisScreen() {
   // update when route param changes
   useEffect(() => {
     if (typeof image === 'string') {
-      setImageUri(decodeURIComponent(image));
+      //setImageUri(decodeURIComponent(image));
+      const decoded = decodeURIComponent(image)
+
+      setImageUri(decoded)
+      setAnalyzedImageUri(null)
+      setResult(null)
+      setImageSize(null)
+
+
     }
   }, [image]);
 
@@ -131,6 +216,22 @@ export default function AnalysisScreen() {
     }
   };
 
+
+  const FolderItem = ({ folder }: { folder: FolderType }) => (
+    <TouchableOpacity
+      className="p-4 border-b border-gray-200 active:bg-gray-50"
+      onPress={() => handleFolderSelect(folder)}
+    >
+      <View className="flex-row justify-between items-center">
+        <View className="flex-1">
+          <Text className="text-base font-medium text-gray-800">
+            {folder.folder_name}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  )
+
   return (
     <ScrollView className="flex-1 bg-gray-100"
       contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
@@ -184,7 +285,7 @@ export default function AnalysisScreen() {
       <View className="w-full mt-6 gap-4">
         <Text className="font-semibold text-xl text-gray-800">
           Detection Result
-        </Text>   
+        </Text>
 
         {result && result.detections?.thyrocytes && imageSize && analyzedImageUri ? (
           <>
@@ -218,19 +319,120 @@ export default function AnalysisScreen() {
                 <View className="w-4 h-4 bg-blue-500 rounded-sm" />
                 <Text className="text-gray-800 text-sm">Inadequate</Text>
               </View>
-
-              <Button title="Download Result" onPress={handleDownload} />
             </View>
+            <Button title={loading?"...":"Download Result"} onPress={handleDownload} disabled={loading}/>
+            <Button title={loading?"...":"Save Image"} onPress={handleSaveImage} disabled={loading}/>
           </>
         ) : (
-           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
-              <ScanSearch size={48} color="#9CA3AF" />
-              <Text className="text-gray-400 mt-2 text-center">
-                No results are shown. Upload a valid image for analysis to see them here!
-              </Text>
+          <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+            <ScanSearch size={48} color="#9CA3AF" />
+            <Text className="text-gray-400 mt-2 text-center">
+              No results are shown. Upload a valid image for analysis to see them here!
+            </Text>
           </View>
         )}
       </View>
+
+
+      {/* Folder Selection Popup */}
+      <Modal
+        visible={showFolderPopup}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFolderPopup(false)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl max-h-3/4">
+            <View className="p-4 border-b border-gray-200">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-xl font-bold text-gray-900">Select Folder</Text>
+                <TouchableOpacity onPress={() => setShowFolderPopup(false)}>
+                  <Text className="text-lg text-gray-500">✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Text className="text-gray-600">Choose where to save the image</Text>
+            </View>
+
+            {foldersLoading ? (
+              <View className="p-6 items-center">
+                <ActivityIndicator />
+                <Text className="text-gray-500 mt-2">Loading folders...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={folders}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => <FolderItem folder={item} />}
+                ListEmptyComponent={
+                  <View className="p-6 items-center">
+                    <Text className="text-gray-500">No folders found</Text>
+                  </View>
+                }
+              />
+            )}
+
+
+          </View>
+        </View>
+      </Modal>
+
+
+
+            {/* File Name Input Popup */}
+      <Modal
+        visible={showFileNamePopup}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setShowFileNamePopup(false)
+          setSelectedFolder(null)
+          setFileName('')
+        }}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50 p-4">
+          <View className="bg-white rounded-2xl w-full max-w-md p-6">
+            <Text className="text-xl font-bold text-gray-900 mb-2">
+              Save to {selectedFolder?.folder_name}
+            </Text>
+            <Text className="text-gray-600 mb-6">
+              Enter a name for your image file
+            </Text>
+
+            <TextInput
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 text-gray-800"
+              placeholder="Enter file name (e.g., my_analysis_result)"
+              value={fileName}
+              onChangeText={setFileName}
+              autoFocus={true}
+              onSubmitEditing={handleConfirmFileName}
+            />
+
+            <View className="flex-row justify-end space-x-3">
+              <TouchableOpacity
+                className="px-5 py-2 rounded-lg"
+                onPress={() => {
+                  setShowFileNamePopup(false)
+                  setSelectedFolder(null)
+                  setFileName('')
+                }}
+              >
+                <Text className="text-gray-600 font-medium">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="bg-blue-500 px-5 py-2 rounded-lg"
+                onPress={handleConfirmFileName}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text className="text-white font-medium">Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
