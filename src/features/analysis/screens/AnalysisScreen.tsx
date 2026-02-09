@@ -13,6 +13,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { Button } from 'react-native';
 import { Dimensions } from 'react-native';
 import { getFolders } from '../../../../api/folder'
+import { uploadImage } from '../../../../api/image';
 
 
 
@@ -57,6 +58,34 @@ export default function AnalysisScreen() {
       Alert.alert("Error", "Failed to load folders")
     } finally {
       setFoldersLoading(false)
+    }
+  }
+
+  const handleFolderSelect = async (folder: FolderType) => {
+    if (!imageUri || !result) {
+      Alert.alert("Error", "No analyzed image to save.")
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const imagePayload = getImageMetaFromUri(imageUri)
+
+      await uploadImage({
+        image: imagePayload,
+        imageName: "Analysis Result",
+        folderId: folder.id,
+        detectionResult: result?.detections,
+      })
+
+      Alert.alert("Success", "Image saved successfully!")
+      setShowFolderPopup(false)
+    } catch (err) {
+      console.error(err)
+      Alert.alert("Upload failed", "Could not save image.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -169,10 +198,13 @@ export default function AnalysisScreen() {
   const FolderItem = ({ folder }: { folder: FolderType }) => (
     <TouchableOpacity
       className="p-4 border-b border-gray-200 active:bg-gray-50"
+      onPress={() => handleFolderSelect(folder)}
     >
       <View className="flex-row justify-between items-center">
         <View className="flex-1">
-          <Text className="text-base font-medium text-gray-800">{folder.folder_name}</Text>
+          <Text className="text-base font-medium text-gray-800">
+            {folder.folder_name}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
