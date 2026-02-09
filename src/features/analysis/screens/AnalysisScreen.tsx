@@ -12,14 +12,14 @@ import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { Button } from 'react-native';
 import { Dimensions } from 'react-native';
+import { getFolders } from '../../../../api/folder'
 
 
 
 export default function AnalysisScreen() {
   type FolderType = {
     id: string;
-    name: string;
-    count: number;
+    folder_name: string;
   };
   const { image } = useLocalSearchParams() as { image?: string }
   const router = useRouter()
@@ -42,18 +42,22 @@ export default function AnalysisScreen() {
   const [showFolderPopup, setShowFolderPopup] = useState(false)
   const [selectedFolder, setSelectedFolder] = useState(null)
 
-  //Sample folder data
-  const folders = [
-    { id: '1', name: 'Nature Photos', count: 24 },
-    { id: '2', name: 'Portraits', count: 12 },
-    { id: '3', name: 'Travel', count: 8 },
-    { id: '4', name: 'Work Projects', count: 15 },
-    { id: '5', name: 'Personal', count: 32 },
-    { id: '6', name: 'Architecture', count: 7 },
-  ]
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [foldersLoading, setFoldersLoading] = useState(false)
 
-  const handleSaveImage = () => {
-    setShowFolderPopup(true)
+
+  const handleSaveImage = async () => {
+    try {
+      setFoldersLoading(true)
+      const response = await getFolders()
+      console.log(response)
+      setFolders(response)
+      setShowFolderPopup(true)
+    } catch (err) {
+      Alert.alert("Error", "Failed to load folders")
+    } finally {
+      setFoldersLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -168,8 +172,7 @@ export default function AnalysisScreen() {
     >
       <View className="flex-row justify-between items-center">
         <View className="flex-1">
-          <Text className="text-base font-medium text-gray-800">{folder.name}</Text>
-          <Text className="text-sm text-gray-500">{folder.count} images</Text>
+          <Text className="text-base font-medium text-gray-800">{folder.folder_name}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -296,11 +299,24 @@ export default function AnalysisScreen() {
               <Text className="text-gray-600">Choose where to save the image</Text>
             </View>
 
-            <FlatList
-              data={folders}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <FolderItem folder={item} />}
-            />
+            {foldersLoading ? (
+              <View className="p-6 items-center">
+                <ActivityIndicator />
+                <Text className="text-gray-500 mt-2">Loading folders...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={folders}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => <FolderItem folder={item} />}
+                ListEmptyComponent={
+                  <View className="p-6 items-center">
+                    <Text className="text-gray-500">No folders found</Text>
+                  </View>
+                }
+              />
+            )}
+
 
           </View>
         </View>
