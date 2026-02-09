@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
@@ -41,15 +41,19 @@ export default function AnalysisScreen() {
   const screenWidth = Dimensions.get('window').width;
 
   const [showFolderPopup, setShowFolderPopup] = useState(false)
-  const [selectedFolder, setSelectedFolder] = useState(null)
+  const [showFileNamePopup, setShowFileNamePopup] = useState(false)
+  const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null)
+  const [fileName, setFileName] = useState('')
+
 
   const [folders, setFolders] = useState<FolderType[]>([])
   const [foldersLoading, setFoldersLoading] = useState(false)
 
 
+
   const handleSaveImage = async () => {
     try {
-      setFoldersLoading(true)
+      setLoading(true)
       const response = await getFolders()
       console.log(response)
       setFolders(response)
@@ -57,30 +61,48 @@ export default function AnalysisScreen() {
     } catch (err) {
       Alert.alert("Error", "Failed to load folders")
     } finally {
-      setFoldersLoading(false)
+      setLoading(false)
     }
   }
 
-  const handleFolderSelect = async (folder: FolderType) => {
-    if (!imageUri || !result) {
+  const handleFolderSelect = (folder: FolderType) => {
+    // First, select the folder and show file name input popup
+    setSelectedFolder(folder)
+    setFileName('') // Reset file name
+    setShowFolderPopup(false)
+    setShowFileNamePopup(true)
+  }
+
+  const handleConfirmFileName = async () => {
+    if (!imageUri || !result || !selectedFolder) {
       Alert.alert("Error", "No analyzed image to save.")
+      return
+    }
+
+    if (!fileName.trim()) {
+      Alert.alert("Error", "Please enter a file name.")
       return
     }
 
     try {
       setLoading(true)
+      setShowFileNamePopup(false)
 
       const imagePayload = getImageMetaFromUri(imageUri)
+      
+      // Use user-entered file name, but ensure it has an extension
+      const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
 
       await uploadImage({
         image: imagePayload,
-        imageName: "Analysis Result",
-        folderId: folder.id,
+        imageName: finalFileName, // Use the custom file name
+        folderId: selectedFolder.id,
         detectionResult: result?.detections,
       })
 
       Alert.alert("Success", "Image saved successfully!")
-      setShowFolderPopup(false)
+      setSelectedFolder(null)
+      setFileName('')
     } catch (err) {
       console.error(err)
       Alert.alert("Upload failed", "Could not save image.")
@@ -298,8 +320,8 @@ export default function AnalysisScreen() {
                 <Text className="text-gray-800 text-sm">Inadequate</Text>
               </View>
             </View>
-            <Button title="Download Result" onPress={handleDownload} />
-            <Button title="Save Image" onPress={handleSaveImage} />
+            <Button title={loading?"...":"Download Result"} onPress={handleDownload} disabled={loading}/>
+            <Button title={loading?"...":"Save Image"} onPress={handleSaveImage} disabled={loading}/>
           </>
         ) : (
           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
@@ -350,6 +372,64 @@ export default function AnalysisScreen() {
             )}
 
 
+          </View>
+        </View>
+      </Modal>
+
+
+
+            {/* File Name Input Popup */}
+      <Modal
+        visible={showFileNamePopup}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setShowFileNamePopup(false)
+          setSelectedFolder(null)
+          setFileName('')
+        }}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50 p-4">
+          <View className="bg-white rounded-2xl w-full max-w-md p-6">
+            <Text className="text-xl font-bold text-gray-900 mb-2">
+              Save to {selectedFolder?.folder_name}
+            </Text>
+            <Text className="text-gray-600 mb-6">
+              Enter a name for your image file
+            </Text>
+
+            <TextInput
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 text-gray-800"
+              placeholder="Enter file name (e.g., my_analysis_result)"
+              value={fileName}
+              onChangeText={setFileName}
+              autoFocus={true}
+              onSubmitEditing={handleConfirmFileName}
+            />
+
+            <View className="flex-row justify-end space-x-3">
+              <TouchableOpacity
+                className="px-5 py-2 rounded-lg"
+                onPress={() => {
+                  setShowFileNamePopup(false)
+                  setSelectedFolder(null)
+                  setFileName('')
+                }}
+              >
+                <Text className="text-gray-600 font-medium">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="bg-blue-500 px-5 py-2 rounded-lg"
+                onPress={handleConfirmFileName}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text className="text-white font-medium">Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
