@@ -200,6 +200,7 @@ export default function ReportFolderScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
 useEffect(() => {
+  setReports([])
   async function fetchImages() {
     try {
       const data = await getImagesByFolder(Number(folderId))
