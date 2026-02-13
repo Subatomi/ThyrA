@@ -5,6 +5,7 @@ import Animated from 'react-native-reanimated';
 import { MoreVerticalIcon, Folder } from 'lucide-react-native';
 import usePressableAnimation from '../../../hooks/usePressableAnimation';
 import { deleteFolder } from "api/folder";
+import { useRouter } from 'expo-router'
 
 interface FolderCardProps {
   id: string
@@ -13,39 +14,47 @@ interface FolderCardProps {
   onMenuPress?: () => void;
 }
 
-const FolderCard = ({ id,title, onPress, onMenuPress }: FolderCardProps) => {
+const FolderCard = ({ id, title, onPress, onMenuPress }: FolderCardProps) => {
+  const router = useRouter();
   const { animatedStyle, onPressIn, onPressOut } = usePressableAnimation();
   const { openActionBar, openEditModal, openDeleteModal } = useCreateFolder();
 
-  // // Handler to delete folder
-  // const handleDeleteFolder = async () => {
-  //   try {
-  //     await deleteFolder(id);
-  //     Alert.alert("Success", "Folder deleted successfully!");
-  //     // Remove folder from parent state if callback provided
-  //   } catch (err: any) {
-  //     Alert.alert("Error", err.message || "Failed to delete folder");
-  //   }
-  // };
+  // Wrap the onPress prop to include navigation
+  const handlePress = () => {
+    // Navigate first
+    router.push({
+      pathname: '/report-folder',
+      params: {
+        folderId: id,
+        folderName: title,
+      },
+    });
+
+    // Call any additional onPress logic passed from parent
+    if (onPress) onPress();
+  };
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}  // 👈 use this
       onLongPress={() =>
         openActionBar({
           onEdit: () => {
-            if (onMenuPress) onMenuPress()
-            else openEditModal({id, name: title, description: '' })
+            if (onMenuPress) onMenuPress();
+            else openEditModal({ id, name: title, description: '' });
           },
-          onDelete: () => openDeleteModal(title,id.toString()),
+          onDelete: () => openDeleteModal(title, id.toString()),
         })
       }
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       className="w-full max-w-48 h-56 mb-4"
     >
-      <Animated.View style={[{ elevation: 4 }, animatedStyle]} className="bg-white rounded-lg p-4 w-full h-fit shadow-lg shadow-gray-200">
-        {/* Menu Button - Absolute positioned to top right */}
+      <Animated.View
+        style={[{ elevation: 4 }, animatedStyle]}
+        className="bg-white rounded-lg p-4 w-full h-fit shadow-lg shadow-gray-200"
+      >
+        {/* Menu Button */}
         {title !== "default" && (
           <View className="absolute top-4 right-2 z-10">
             <Pressable
@@ -55,14 +64,14 @@ const FolderCard = ({ id,title, onPress, onMenuPress }: FolderCardProps) => {
                   return;
                 }
                 openActionBar({
-                  onEdit: () => openEditModal({id, name: title, description: '' }),
-                  onDelete: () => openDeleteModal(title,id.toString()),
+                  onEdit: () => openEditModal({ id, name: title, description: '' }),
+                  onDelete: () => openDeleteModal(title, id.toString()),
                 });
               }}
               onLongPress={() =>
                 openActionBar({
-                  onEdit: () => openEditModal({ id,name: title, description: '' }),
-                  onDelete: () => openDeleteModal(title,id.toString()),
+                  onEdit: () => openEditModal({ id, name: title, description: '' }),
+                  onDelete: () => openDeleteModal(title, id.toString()),
                 })
               }
               className="p-2 active:opacity-50"
@@ -72,23 +81,17 @@ const FolderCard = ({ id,title, onPress, onMenuPress }: FolderCardProps) => {
           </View>
         )}
 
-        {/* Folder Icon Container */}
+        {/* Folder Icon */}
         <View className="items-center justify-center mt-4 ">
           <View className="relative">
-            {/* Main Folder Shape */}
-            <Folder
-              size={100}
-              color="#FFD100"
-              fill="#FFD100"
-            />
-            {/* Accent Tab (Visual tweak to match your orange/yellow folder) */}
+            <Folder size={100} color="#FFD100" fill="#FFD100" />
             <View
               className="absolute top-[10px] left-[5px] w-8 h-3 rounded-tl-sm rounded-tr-md bg-amber-500"
             />
           </View>
         </View>
 
-        {/* Folder Info */}
+        {/* Folder Title */}
         <View className="items-center">
           <Text
             numberOfLines={1}

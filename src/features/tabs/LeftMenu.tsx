@@ -98,7 +98,13 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
                 className="flex-row items-center py-3 gap-4"
                 onPress={() => {
                   onClose()
-                  setTimeout(() => router.push('/report-folder'), 200)
+                  setTimeout(() => router.push({
+        pathname: '/report-folder',
+        params: {
+          folderId: "18",          
+          folderName: "LALA" 
+        }
+      }), 200)
                 }}
               >
                 <Files size={20} color="#333" className="mr-3" />

@@ -23,3 +23,9 @@ export function updateFolder(folder_id, folder_name) {
     body: JSON.stringify({ folder_name }),
   });
 }
+
+export function getImagesByFolder(folder_id) {
+  return apiRequest(`/image/${folder_id}`, {
+    method: "GET",
+  });
+}

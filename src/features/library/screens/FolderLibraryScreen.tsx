@@ -1,4 +1,4 @@
-import { View, Text, Alert, FlatList } from 'react-native';
+import { Pressable,View, Text, Alert, FlatList } from 'react-native';
 import BackButton from '../../../components/BackButton';
 import FolderCard from '../components/FolderCardWithSetting';
 import CreateFolderButton from '../components/CreateFolderButton';
@@ -6,6 +6,7 @@ import CreateFolderProvider from '../hooks/CreateFolderModalContext';
 import { FolderSearch } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { getFolders,createFolder } from 'api/folder';
+import { useRouter } from 'expo-router'
 
 function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array<{ id: string; title: string; itemCount: number; date: string; description?: string }>; onCreate: (data: { name: string; description?: string }) => void; onEdit: (originalName: string | undefined, data: { name: string; description?: string }) => void; onDelete: (name?: string) => void }) {
 
@@ -28,7 +29,7 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: { folders: Array
           columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
           renderItem={({ item }) => (
             <View className="px-2 mb-4" style={{ width: 160 }}>
-              <FolderCard id = {item.id} title={item.title} itemCount={item.itemCount} date={item.date} />
+              <FolderCard id = {item.id} title={item.title} />
             </View>
           )}
         />
