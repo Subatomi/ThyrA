@@ -16,13 +16,17 @@ import { getFolders } from '../../../../api/folder'
 import { uploadImage } from '../../../../api/image';
 
 
-
-export default function AnalysisScreen() {
+export default function ReportScreen() {
   type FolderType = {
     id: string;
     folder_name: string;
   };
-  const { image } = useLocalSearchParams() as { image?: string }
+const { image, reportId, reportName, reportDecode} = useLocalSearchParams<{
+  image?: string
+  reportId?: string
+  reportName?: string
+  reportDecode?: string
+}>()
   const router = useRouter()
 
   // decode route-encoded URIs (file:// and other special chars can break route params)
@@ -132,9 +136,15 @@ export default function AnalysisScreen() {
       const decoded = decodeURIComponent(image)
 
       setImageUri(decoded)
-      setAnalyzedImageUri(null)
-      setResult(null)
+      setAnalyzedImageUri(decoded)
+      setResult(JSON.parse(reportDecode))
       setImageSize(null)
+
+      /*console.log(imageSize)
+      console.log(imageUri)
+      console.log(result)
+      console.log(result.detections?.thyrocytes)
+      console.log(analyzedImageUri)*/
 
 
     }
@@ -241,7 +251,7 @@ export default function AnalysisScreen() {
         </View>
 
         <View className='items-center'>
-          <Text className="font-bold text-4xl text-center text-gray-900">Analysis</Text>
+          <Text className="font-bold text-4xl text-center text-gray-900">{reportName}</Text>
         </View>
 
       </View>
@@ -249,8 +259,8 @@ export default function AnalysisScreen() {
       <View className="w-full my-4">
         <ImageUploadArea
           externalImageUri={imageUri}
-          disabled={false}
-          onPick={(uri) => {
+          disabled = {true}
+          /*onPick={(uri) => {
             setImageUri(uri)
             setAnalyzedImageUri(null);
             setResult(null);
@@ -258,12 +268,12 @@ export default function AnalysisScreen() {
           }}
           onRemove={() => {
             setImageUri(null)
-          }}
+          }}*/
         />
       </View>
 
       {/* ANALYZE BUTTON */}
-      <Pressable
+      {/*<Pressable
         className="w-full mb-6 mt-2"
         onPress={handleAnalyze}
         disabled={loading}
@@ -281,14 +291,13 @@ export default function AnalysisScreen() {
             </Text>
           )}
         </View>
-      </Pressable>
+      </Pressable>*/}
 
       <View className="w-full mt-6 gap-4">
         <Text className="font-semibold text-xl text-gray-800">
           Detection Result
         </Text>
-
-        {result && result.detections?.thyrocytes && imageSize && analyzedImageUri ? (
+        {result && result.detection_result?.thyrocytes && imageSize && analyzedImageUri ? (
           <>
             <View
               ref={detectionRef}
@@ -302,8 +311,8 @@ export default function AnalysisScreen() {
             >
               <DetectionOverlay
                 imageUri={analyzedImageUri}
-                thyrocytes={result.detections?.thyrocytes}
-                clusters={result.detections?.clusters}
+                thyrocytes={result.detection_result?.thyrocytes}
+                clusters={result.detection_result?.clusters}
                 originalWidth={imageSize.width}
                 originalHeight={imageSize.height}
               />
@@ -322,7 +331,7 @@ export default function AnalysisScreen() {
               </View>
             </View>
             <Button title={loading?"...":"Download Result"} onPress={handleDownload} disabled={loading}/>
-            <Button title={loading?"...":"Save Image"} onPress={handleSaveImage} disabled={loading}/>
+            {/*<Button title={loading?"...":"Save Image"} onPress={handleSaveImage} disabled={loading}/>*/}
           </>
         ) : (
           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">

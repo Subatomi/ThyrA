@@ -10,13 +10,15 @@ type Props = {
   onRemove?: () => void
   externalImageUri?: string | null
   preventLocalPreview?: boolean
+  disabled:boolean
 }
 
-const ImageUploadArea: React.FC<Props> = ({ onPick, onRemove, externalImageUri = null, preventLocalPreview = false }) => {
+const ImageUploadArea: React.FC<Props> = ({ onPick, onRemove, externalImageUri = null, preventLocalPreview = false,disabled }) => {
   const { imageUri, setImageUri, pickImage } = useImagePicker()
   const { animatedStyle, onPressIn, onPressOut } = usePressableAnimation()
 
   async function handlePick() {
+    if(disabled) return
     const uri = await pickImage()
     if (uri) {
       if (onPick) onPick(uri)
@@ -80,7 +82,7 @@ const ImageUploadArea: React.FC<Props> = ({ onPick, onRemove, externalImageUri =
                 if (onRemove) onRemove()
               }
             }} className="p-1.5 rounded-full bg-red-100">
-              <Trash2 size={15} color="#E11D48" />
+              {disabled == false?<Trash2 size={15} color="#E11D48" />:""}
             </Pressable>
           </View>
         </View>

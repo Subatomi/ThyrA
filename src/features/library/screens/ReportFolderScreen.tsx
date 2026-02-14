@@ -170,6 +170,7 @@ import EditReportTitleModal from '../components/EditReportTitleModal'
 import DeleteReportModal from '../components/DeleteReportModal'
 import { getFolders,getImagesByFolder } from '../../../../api/folder' // import your getFolders function
 import { useLocalSearchParams } from 'expo-router'
+import { useRouter } from 'expo-router'
 type ReportFolderScreenRoute = {
   params: {
     folderId: number;
@@ -177,7 +178,35 @@ type ReportFolderScreenRoute = {
   };
 };
 
+// Bounding box = [x1, y1, x2, y2]
+export type BBox = [number, number, number, number]
+
+export interface ThyrocyteDetection {
+  bbox: BBox
+  confidence: number
+}
+
+export interface ClusterDetection {
+  bbox: BBox
+  status: "Adequate" | "Inadequate" | string
+  num_thyrocytes: number
+}
+
+export interface DetectionResult {
+  clusters: ClusterDetection[]
+  thyrocytes: ThyrocyteDetection[]
+}
+
+export interface ReportItem {
+  id: string
+  image_name: string
+  date: string
+  image: { uri: string }
+  detection_result: DetectionResult | null
+}
+
 export default function ReportFolderScreen() {
+  const router = useRouter()
   const { folderId, folderName } = useLocalSearchParams<{
     folderId: string
     folderName: string
@@ -186,12 +215,7 @@ export default function ReportFolderScreen() {
   const numericFolderId = Number(folderId)
 
 
-  const [reports, setReports] = useState<Array<{
-  id: string;
-  image_name: string;
-  date: string;
-  image: any;
-}>>([])
+  const [reports, setReports] = useState<ReportItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
   const [selectedReportTitle, setSelectedReportTitle] = useState('')
@@ -205,12 +229,14 @@ useEffect(() => {
     try {
       const data = await getImagesByFolder(Number(folderId))
 
-      const mappedReports = data.map((img: any) => ({
-        id: String(img.id),
-        image_name: img.image_name,
-        date: "", // add created_at later if needed
-        image: { uri: img.image_url },
-      }))
+const mappedReports: ReportItem[] = data.map((img: any) => ({
+  id: String(img.id),
+  image_name: img.image_name,
+  date: "",
+  image: { uri: img.image_url },
+  detection_result: img.detection_result as DetectionResult | null,
+}))
+
 
       setReports(mappedReports)
     } catch (error) {
@@ -231,12 +257,33 @@ useEffect(() => {
     setShowFloatingActions(true)
   }
 
-  function handleCardPress(reportId: string) {
-    Alert.alert('Open report', `Open report ${reportId}`)
-    setSelectedReportId(null)
-    setSelectedReportTitle('')
-    setShowFloatingActions(false)
-  }
+function handleCardPress(reportId: string) {
+
+  const report = reports.find(r => r.id === reportId)
+
+  console.log(JSON.stringify(report.detection_result))
+  if (!report) return
+
+  router.push({
+    pathname: '/report-analysis',
+    params: {
+      image: encodeURIComponent(report.image.uri),
+      reportId: report.id,
+      reportName: report.image_name,
+
+      // MUST be string
+      reportDecode: report.detection_result
+        ? JSON.stringify(report)
+        : "",
+    },
+  })
+
+  setSelectedReportId(null)
+  setSelectedReportTitle('')
+  setShowFloatingActions(false)
+}
+
+
 
   function handleProviderEdit(originalName: string | undefined, data: { name: string; description?: string }) {
     if (!originalName) return
