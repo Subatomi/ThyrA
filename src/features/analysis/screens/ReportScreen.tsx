@@ -6,14 +6,16 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState, useEffect, useRef } from 'react';
 import { runInference } from 'api/image';
 import DetectionOverlay from '@/components/DetectionOverlay';
-import { ScanSearch } from 'lucide-react-native';
+import { ScanSearch, Download, Trash2, Pencil, X } from 'lucide-react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { Button } from 'react-native';
 import { Dimensions } from 'react-native';
 import { getFolders } from '../../../../api/folder'
-import { uploadImage } from '../../../../api/image';
+import { uploadImage, deleteImage, updateImageName } from '../../../../api/image';
+import EditReportTitleModal from '../../library/components/EditReportTitleModal'
+import DeleteReportModal from '../../library/components/DeleteReportModal'
 
 
 export default function ReportScreen() {
@@ -48,6 +50,12 @@ const { image, reportId, reportName, reportDecode} = useLocalSearchParams<{
   const [showFileNamePopup, setShowFileNamePopup] = useState(false)
   const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null)
   const [fileName, setFileName] = useState('')
+  const [showActions, setShowActions] = useState(false)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(reportId ? String(reportId) : null)
+  const [selectedReportTitle, setSelectedReportTitle] = useState<string>(reportName ?? '')
 
 
   const [folders, setFolders] = useState<FolderType[]>([])
@@ -137,7 +145,9 @@ const { image, reportId, reportName, reportDecode} = useLocalSearchParams<{
 
       setImageUri(decoded)
       setAnalyzedImageUri(decoded)
-      setResult(JSON.parse(reportDecode))
+      if (reportDecode) {
+        setResult(JSON.parse(reportDecode))
+      }
       setImageSize(null)
 
       /*console.log(imageSize)
@@ -242,6 +252,42 @@ const { image, reportId, reportName, reportDecode} = useLocalSearchParams<{
     </TouchableOpacity>
   )
 
+  function handleProviderEdit(originalName: string | undefined, data: { name: string; description?: string }) {
+    if (!originalName) return
+    if (!selectedReportId) return
+    (async () => {
+      try {
+        setLoading(true)
+        await updateImageName(selectedReportId, data.name)
+        setSelectedReportTitle(data.name)
+        Alert.alert('Success', 'Report title updated')
+      } catch (err: any) {
+        console.error('Failed to update report', err)
+        Alert.alert('Error', err?.message || 'Failed to update report')
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }
+
+  function handleProviderDelete(name?: string) {
+    if (!name) return
+    if (!selectedReportId) return
+    (async () => {
+      try {
+        setLoading(true)
+        await deleteImage(selectedReportId)
+        Alert.alert('Deleted', 'Report deleted')
+        router.back()
+      } catch (err: any) {
+        console.error('Failed to delete report', err)
+        Alert.alert('Error', err?.message || 'Failed to delete report')
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }
+
   return (
     <ScrollView className="flex-1 bg-gray-100"
       contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
@@ -256,82 +302,108 @@ const { image, reportId, reportName, reportDecode} = useLocalSearchParams<{
 
       </View>
 
-      <View className="w-full my-4">
-        <ImageUploadArea
-          externalImageUri={imageUri}
-          disabled = {true}
-          /*onPick={(uri) => {
-            setImageUri(uri)
-            setAnalyzedImageUri(null);
-            setResult(null);
-            setImageSize(null);
-          }}
-          onRemove={() => {
-            setImageUri(null)
-          }}*/
-        />
-      </View>
-
-      {/* ANALYZE BUTTON */}
-      {/*<Pressable
-        className="w-full mb-6 mt-2"
-        onPress={handleAnalyze}
-        disabled={loading}
-      >
-        <View
-          style={{ elevation: 3 }}
-          className={`py-4 rounded-lg items-center justify-center ${loading ? "bg-gray-400" : "bg-red-500"
-            }`}
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white font-bold text-xl">
-              Analyze
-            </Text>
-          )}
-        </View>
-      </Pressable>*/}
-
       <View className="w-full mt-6 gap-4">
         <Text className="font-semibold text-xl text-gray-800">
           Detection Result
         </Text>
         {result && result.detection_result?.thyrocytes && imageSize && analyzedImageUri ? (
           <>
-            <View
-              ref={detectionRef}
-              collapsable={false}
-              style={{
-                width: screenWidth - 40, // account for ScrollView padding
-                aspectRatio: imageSize.width / imageSize.height,
-                marginVertical: 10,
-              }}
-              onLayout={() => setIsLayoutReady(true)}
-            >
-              <DetectionOverlay
-                imageUri={analyzedImageUri}
-                thyrocytes={result.detection_result?.thyrocytes}
-                clusters={result.detection_result?.clusters}
-                originalWidth={imageSize.width}
-                originalHeight={imageSize.height}
-              />
+            <View className='bg-white rounded-md p-4  overflow-hidden' style={{ elevation: 1 }}>
+              <View
+                ref={detectionRef}
+                collapsable={false}
+                style={{
+                  width: '100%', // account for ScrollView padding
+                  aspectRatio: imageSize.width / imageSize.height,
+                  marginVertical: 10,
+                }}
+                onLayout={() => setIsLayoutReady(true)}
+              >
+                <DetectionOverlay
+                  imageUri={analyzedImageUri}
+                  thyrocytes={result.detection_result?.thyrocytes}
+                  clusters={result.detection_result?.clusters}
+                  originalWidth={imageSize.width}
+                  originalHeight={imageSize.height}
+                />
+              </View>
+
             </View>
 
             {/* LEGEND */}
-            <View className="flex-row justify-start items-center gap-4">
-              <View className="flex-row items-center gap-2">
-                <View className="w-4 h-4 bg-green-500 rounded-sm" />
-                <Text className="text-gray-800 text-sm">Adequate</Text>
+            <View className='flex flex-col bg-white rounded-md p-4  overflow-hidden justify-between gap-5' style={{ elevation: 1 }}>
+              <View>
+                
+                <Text className="text-gray-800 text-md font-bold">Details</Text>
+                <Text className="text-sm text-gray-600">Filename: {getImageMetaFromUri(analyzedImageUri).fileName}</Text>
+              </View>
+              <View className="flex-col justify-start gap-2">
+                <Text className="text-gray-800 text-md font-bold">Legend</Text>
+                <View className='flex-row gap-4'>
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-4 h-4 bg-green-500 rounded-sm" />
+                    <Text className="text-gray-800 text-sm">Adequate</Text>
+                  </View>
+
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-4 h-4 bg-blue-500 rounded-sm" />
+                    <Text className="text-gray-800 text-sm">Inadequate</Text>
+                  </View>
+                </View>
               </View>
 
-              <View className="flex-row items-center gap-2">
-                <View className="w-4 h-4 bg-blue-500 rounded-sm" />
-                <Text className="text-gray-800 text-sm">Inadequate</Text>
+              {/* <Button title={loading?"...":"Download Result"} onPress={handleDownload} disabled={loading}/> */}
+              <View className="gap-3">
+                <Pressable onPress={handleDownload} disabled={loading}>
+                  {({ pressed }) => (
+                    <View
+                      className="py-3 rounded-md items-center flex-row justify-center gap-2"
+                      style={{ backgroundColor: pressed ? '#15803d' : loading ? '#9ca3af' : '#16a34a' }}
+                    >
+                      {loading ? (
+                        <ActivityIndicator color="white" />
+                      ) : (
+                        <>
+                          <Download size={16} color="white" />
+                          <Text className="text-white font-bold">Download Result</Text>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </Pressable>
               </View>
             </View>
-            <Button title={loading?"...":"Download Result"} onPress={handleDownload} disabled={loading}/>
-            {/*<Button title={loading?"...":"Save Image"} onPress={handleSaveImage} disabled={loading}/>*/}
+
+            <View className="flex-col gap-3 bg-white rounded-md p-4" style={{ elevation: 1 }}>
+              <Text className="text-black font-bold text-md">Edit</Text>
+              <View className='flex-row justify-end gap-3'>
+                <Pressable onPress={() => setEditModalVisible(true)}>
+                  {({ pressed }) => (
+                    <View
+                      className="p-2 rounded-md flex-row gap-2 border border-black/20"
+                      style={{ backgroundColor: pressed ? '#e5e7eb' : '#f3f4f6' }}
+                    >
+                      <Pencil size={16} color="#6b7280" />
+                      <Text className="text-black/60">Edit Name</Text>
+                    </View>
+                  )}
+                </Pressable>
+
+                <Pressable onPress={() => setDeleteModalVisible(true)}>
+                  {({ pressed }) => (
+                    <View
+                      className="p-2 rounded-md flex-row gap-2 border border-black/20"
+                      style={{ backgroundColor: pressed ? '#e5e7eb' : '#f3f4f6' }}
+                    >
+                      <Trash2 size={16} color="#6b7280" />
+                      <Text className="text-black/60">Delete Report</Text>
+                    </View>
+                  )}
+                </Pressable>
+              </View>
+             
+            </View>
+
           </>
         ) : (
           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
@@ -343,106 +415,33 @@ const { image, reportId, reportName, reportDecode} = useLocalSearchParams<{
         )}
       </View>
 
-
-      {/* Folder Selection Popup */}
-      <Modal
-        visible={showFolderPopup}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowFolderPopup(false)}
-      >
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl max-h-3/4">
-            <View className="p-4 border-b border-gray-200">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-xl font-bold text-gray-900">Select Folder</Text>
-                <TouchableOpacity onPress={() => setShowFolderPopup(false)}>
-                  <Text className="text-lg text-gray-500">✕</Text>
-                </TouchableOpacity>
-              </View>
-              <Text className="text-gray-600">Choose where to save the image</Text>
-            </View>
-
-            {foldersLoading ? (
-              <View className="p-6 items-center">
-                <ActivityIndicator />
-                <Text className="text-gray-500 mt-2">Loading folders...</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={folders}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <FolderItem folder={item} />}
-                ListEmptyComponent={
-                  <View className="p-6 items-center">
-                    <Text className="text-gray-500">No folders found</Text>
-                  </View>
-                }
-              />
-            )}
-
-
-          </View>
-        </View>
-      </Modal>
-
-
-
-            {/* File Name Input Popup */}
-      <Modal
-        visible={showFileNamePopup}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => {
-          setShowFileNamePopup(false)
-          setSelectedFolder(null)
-          setFileName('')
+      {/* Edit / Delete modals for report */}
+      <EditReportTitleModal
+        visible={editModalVisible}
+        initialName={selectedReportTitle}
+        onClose={() => setEditModalVisible(false)}
+        onSave={(newName) => {
+          handleProviderEdit(selectedReportTitle ?? undefined, { name: newName })
+          setSelectedReportTitle(newName)
+          setEditModalVisible(false)
         }}
-      >
-        <View className="flex-1 justify-center items-center bg-black/50 p-4">
-          <View className="bg-white rounded-2xl w-full max-w-md p-6">
-            <Text className="text-xl font-bold text-gray-900 mb-2">
-              Save to {selectedFolder?.folder_name}
-            </Text>
-            <Text className="text-gray-600 mb-6">
-              Enter a name for your image file
-            </Text>
+      />
 
-            <TextInput
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-6 text-gray-800"
-              placeholder="Enter file name (e.g., my_analysis_result)"
-              value={fileName}
-              onChangeText={setFileName}
-              autoFocus={true}
-              onSubmitEditing={handleConfirmFileName}
-            />
+      <DeleteReportModal
+        visible={deleteModalVisible}
+        reportName={selectedReportTitle}
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={() => {
+          handleProviderDelete(selectedReportTitle ?? undefined)
+          setDeleteModalVisible(false)
+          setShowActions(false)
+          setSelectedReportId(null)
+          setSelectedReportTitle('')
+        }}
+      />
 
-            <View className="flex-row justify-end space-x-3">
-              <TouchableOpacity
-                className="px-5 py-2 rounded-lg"
-                onPress={() => {
-                  setShowFileNamePopup(false)
-                  setSelectedFolder(null)
-                  setFileName('')
-                }}
-              >
-                <Text className="text-gray-600 font-medium">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="bg-blue-500 px-5 py-2 rounded-lg"
-                onPress={handleConfirmFileName}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : (
-                  <Text className="text-white font-medium">Save</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }
+
+        

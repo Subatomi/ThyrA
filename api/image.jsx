@@ -69,3 +69,19 @@ export async function uploadImage({
     throw err;
   }
 }
+
+export const deleteImage = async (imageId) => {
+  const response = await apiRequest(`/image/${imageId}`, {
+    method: 'DELETE',
+  })
+  return response
+}
+
+export const updateImageName = async (imageId, newName) => {
+  const response = await apiRequest(`/image/${imageId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image_name: newName }),
+  })
+  return response
+}
