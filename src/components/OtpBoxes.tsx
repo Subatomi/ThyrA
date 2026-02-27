@@ -1,53 +1,59 @@
 import React, { useRef, useState } from 'react';
-import { View, TextInput, Dimensions, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import {
+  View,
+  TextInput,
+  Dimensions,
+  NativeSyntheticEvent,
+  TextInputKeyPressEvent,
+  StyleSheet,
+} from 'react-native';
 
 export type OtpBoxesProps = {
   length?: number;
   onComplete?: (code: string) => void;
-  boxSize?: number; // optional override
+  boxSize?: number;
 };
 
-const screenWidth = Dimensions.get('window').width;
-const defaultBoxSize = (screenWidth - 80) / 6 - 8; // align with OtpInput
+const { width: screenWidth } = Dimensions.get('window');
+const DEFAULT_BOX_SIZE = (screenWidth - 80) / 6 - 8;
 
 export default function OtpBoxes({ length = 6, onComplete, boxSize }: OtpBoxesProps) {
-  const [digits, setDigits] = useState<string[]>(Array.from({ length }).map(() => ''));
+  const [digits, setDigits] = useState<string[]>(Array(length).fill(''));
   const inputs = useRef<Array<TextInput | null>>([]);
-  const size = boxSize ?? defaultBoxSize;
+  const size = boxSize ?? DEFAULT_BOX_SIZE;
 
   const maybeComplete = (next: string[]) => {
     const code = next.join('');
-    if (onComplete && code.length === length && !next.includes('')) {
-      onComplete(code);
+    if (code.length === length && !next.includes('')) {
+      onComplete?.(code);
     }
   };
 
   const handleChange = (text: string, idx: number) => {
+    const next = [...digits];
+
     if (text === '') {
-      const next = [...digits];
       next[idx] = '';
       setDigits(next);
       return;
     }
-    const ch = text.slice(-1);
-    const next = [...digits];
-    next[idx] = ch;
+
+    next[idx] = text.slice(-1);
     setDigits(next);
-    const nextInput = inputs.current[idx + 1];
-    if (nextInput) nextInput.focus();
+    inputs.current[idx + 1]?.focus();
     maybeComplete(next);
   };
 
-  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, idx: number) => {
-    if (e.nativeEvent.key === 'Backspace') {
-      if (digits[idx] === '') {
-        const prev = inputs.current[idx - 1];
-        if (prev) prev.focus();
-      } else {
-        const next = [...digits];
-        next[idx] = '';
-        setDigits(next);
-      }
+  const handleKeyPress = (e: TextInputKeyPressEvent, idx: number) => {
+    if (e.nativeEvent.key !== 'Backspace') return;
+
+    const next = [...digits];
+
+    if (digits[idx] === '') {
+      inputs.current[idx - 1]?.focus();
+    } else {
+      next[idx] = '';
+      setDigits(next);
     }
   };
 
@@ -56,15 +62,16 @@ export default function OtpBoxes({ length = 6, onComplete, boxSize }: OtpBoxesPr
       {digits.map((d, i) => (
         <TextInput
           key={i}
-          ref={(ref) => { inputs.current[i] = ref }}
+          ref={(ref) => { inputs.current[i] = ref; }}
           value={d}
-          onChangeText={text => handleChange(text, i)}
-          onKeyPress={e => handleKeyPress(e, i)}
+          onChangeText={(text) => handleChange(text, i)}
+          onKeyPress={(e) => handleKeyPress(e, i)}
           keyboardType="number-pad"
           maxLength={1}
-          style={{ width: size, height: size }}
-          className="rounded-lg border border-gray-200 bg-white text-2xl font-bold"
+          className="rounded-lg border border-gray-200 bg-white font-bold p-0"
+          style={{ width: size, height: size, fontSize: size * 0.6 }}
           textAlign="center"
+          textAlignVertical="center"
           selectionColor="#000"
           importantForAutofill="no"
         />
