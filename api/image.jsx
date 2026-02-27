@@ -54,6 +54,7 @@ export async function uploadImage({
       );
     }
 
+    console.log('Uploading image', { imageName, folderId, uri: image.uri })
     const response = await apiRequest("/image/upload", {
       method: "POST",
       body: formData,
@@ -84,4 +85,10 @@ export const updateImageName = async (imageId, newName) => {
     body: JSON.stringify({ image_name: newName }),
   })
   return response
+}
+
+export function getRecentAnalyses(limit = 3) {
+  return apiRequest(`/image/recent?limit=${limit}`, {
+    method: 'GET',
+  });
 }

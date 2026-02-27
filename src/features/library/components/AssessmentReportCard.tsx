@@ -37,8 +37,8 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardPr
             >
               {title}
             </Text>
-            <Text className="text-base text-gray-500 font-light uppercase tracking-widest">
-              {date}
+            <Text className="text-base text-gray-400 font-bold uppercase tracking-widest">
+              {date.split('T')[0]}
             </Text>
           </View>
       </Animated.View>
