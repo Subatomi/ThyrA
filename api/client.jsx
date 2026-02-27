@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const BASE_URL = "http://192.168.1.14:8000"; //your ip4 address. Place on env later
+const BASE_URL = "http://192.168.1.8:8000"; //your ip4 address. Place on env later
 
 // export async function apiRequest(endpoint, options = {}) {
 //   // Get token from AsyncStorage (or SecureStore)
@@ -51,26 +51,31 @@ export async function apiRequest(endpoint, options = {}) {
       : { "Content-Type": "application/json" }),
     ...options.headers,
   };
+  try{
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+    if (response.status === 204) {
+      return { detail: "Successfully deleted" };
+    }
 
-  if (response.status === 204) {
-    return { detail: "Successfully deleted" };
-  }
+    const data = await response.json();
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.detail || "Something went wrong");
-  }
+    if (!response.ok) {
+      throw new Error(data.detail || "Check");
+    } 
 
   return data;
+
+    
+  }catch(err){
+    console.warn(`API error [${endpoint}]:`, err.message);
+    throw err; 
+  }
+
 }
-
-
 
 
 

@@ -54,12 +54,20 @@ export default function TabLayout() {
             ),
           }}
         />
-          <Tabs.Screen
-            name="report-folder"
-            options={{
-              href: null,
-            }}
-          />
+        <Tabs.Screen
+          name="report-folder"
+          options={{
+            href: null,
+          }}
+        />
+
+          
+        <Tabs.Screen
+          name="report-analysis"
+          options={{
+            href: null,
+          }}
+        />
         <Tabs.Screen
           name="result"
           options={{

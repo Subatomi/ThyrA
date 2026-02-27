@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ActivityIndicator, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, ActivityIndicator} from 'react-native';
 import { Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import OtpBoxes from '@/components/OtpBoxes';
@@ -12,7 +12,6 @@ type Props = {
   visible: boolean;
   initialValue: string;
   onClose: () => void;
-  // should attempt to re-auth and send verification; return {success, error}
   onSendVerification: (newEmail: string, password: string) => Promise<SendResult>;
 };
 
@@ -26,7 +25,7 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
   const [code, setCode] = useState('');
 
   const screenWidth = Dimensions.get('window').width;
-  const boxSize = (screenWidth - 80) / 6 - 8; // match OtpInput sizing
+  const boxSize = (screenWidth - 80) / 6 - 8; 
 
   useEffect(() => {
     setEmail(initialValue);
@@ -48,7 +47,6 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
         setError('Password is required');
         return;
       }
-      // if (__DEV__) console.log('[EditEmailModal] startEmailChange', newEmail);
       await startEmailChange({ new_email: newEmail, password });
       setVerificationSent(true);
     } catch (e) {
