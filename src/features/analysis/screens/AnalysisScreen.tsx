@@ -14,10 +14,13 @@ import { Button } from 'react-native';
 import { Dimensions } from 'react-native';
 import { getFolders } from '../../../../api/folder'
 import { uploadImage } from '../../../../api/image';
-
+import { DeviceEventEmitter } from 'react-native';
+import { useToast } from '../../../contexts/ToastContext'
 
 
 export default function AnalysisScreen() {
+  const emit = DeviceEventEmitter.emit.bind(DeviceEventEmitter) 
+  const { show } = useToast()
   type FolderType = {
     id: string;
     folder_name: string;
@@ -59,7 +62,7 @@ export default function AnalysisScreen() {
       setFolders(response)
       setShowFolderPopup(true)
     } catch (err) {
-      Alert.alert("Error", "Failed to load folders")
+      show('danger', 'Error', 'Failed to load folders')
     } finally {
       setLoading(false)
     }
@@ -74,43 +77,63 @@ export default function AnalysisScreen() {
   }
 
   const handleConfirmFileName = async () => {
-    if (!imageUri || !result || !selectedFolder) {
-      Alert.alert("Error", "No analyzed image to save.")
-      return
-    }
-
-    if (!fileName.trim()) {
-      Alert.alert("Error", "Please enter a file name.")
-      return
-    }
-
-    try {
-      setLoading(true)
-      setShowFileNamePopup(false)
-
-      const imagePayload = getImageMetaFromUri(imageUri)
-      
-      // Use user-entered file name, but ensure it has an extension
-      const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
-
-      await uploadImage({
-        image: imagePayload,
-        imageName: finalFileName, // Use the custom file name
-        folderId: selectedFolder.id,
-        detectionResult: result?.detections,
-      })
-
-      Alert.alert("Success", "Image saved successfully!")
-      setSelectedFolder(null)
-      setFileName('')
-    } catch (err) {
-      console.error(err)
-      Alert.alert("Upload failed", "Could not save image.")
-    } finally {
-      setLoading(false)
-    }
+  if (!imageUri || !result || !selectedFolder) {
+    show('warning', 'Error', 'No analyzed image to save.')
+    return
   }
 
+  if (!fileName.trim()) {
+    show('warning', 'Invalid', 'Please enter a file name.')
+    return
+  }
+
+  try {
+    setLoading(true)
+    setShowFileNamePopup(false)
+
+    const imagePayload = getImageMetaFromUri(imageUri)
+    const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
+
+    const created = await uploadImage({
+      image: imagePayload,
+      imageName: finalFileName,
+      folderId: selectedFolder.id,
+      detectionResult: result?.detections,
+    })
+
+    if (created && created.id) {
+      const createdItem = {
+        id: String(created.id),
+        image_name: created.image_name ?? finalFileName,
+        date: created.created_at ?? new Date().toISOString(),
+        image_url: created.image_url ?? imageUri,
+        detection_result: created.detection_result ?? result?.detections ?? null,
+        folder_id: selectedFolder.id,
+      }
+
+      emit(`folder:${selectedFolder.id}`, { action: 'add', item: createdItem })
+      emit('recentAnalyses', { action: 'add', item: createdItem })
+    } else {
+      emit(`folder:${selectedFolder.id}`)
+      emit('recentAnalyses')
+    }
+
+    show('success', 'Saved', 'Image saved successfully!')
+    setSelectedFolder(null)
+    setFileName('')
+  } catch (err) {
+    // console.error(err)
+    const message = err instanceof Error ? err.message : 'Failed to save image.'
+    if (message.toLowerCase().includes('already exists')) {
+      setShowFileNamePopup(true)
+      show('warning', 'Name Taken', `"${fileName}" already exists in this folder. Please choose a different name.`)
+    } else {
+      show('danger', 'Error', message)
+    }
+  } finally {
+    setLoading(false)
+  }
+}
   useEffect(() => {
     if (!imageUri) return;
 
@@ -120,7 +143,7 @@ export default function AnalysisScreen() {
         setImageSize({ width, height });
       },
       (error) => {
-        console.error('Failed to get image size:', error);
+        // console.error('Failed to get image size:', error);
       }
     );
   }, [imageUri]);
@@ -146,8 +169,8 @@ export default function AnalysisScreen() {
     try {
       //Ask for permission
       const { status } = await MediaLibrary.requestPermissionsAsync(true);
-      if (status !== 'granted') {
-        Alert.alert("Permission denied", "Cannot save image without permission.");
+      if (status !== 'granted') { 
+        show('warning', 'Permission Denied', 'Cannot save image without permission.')
         return;
       }
 
@@ -160,11 +183,10 @@ export default function AnalysisScreen() {
       //Save to media library
       const asset = await MediaLibrary.createAssetAsync(uri);
       await MediaLibrary.createAlbumAsync('DetectionResults', asset, false);
-
-      Alert.alert("Success", "Image saved to your gallery!");
+      show('success', 'Saved', 'Image saved to your gallery!')
     } catch (err: any) {
-      console.error(err);
-      Alert.alert("Error", err.message || "Failed to save image.");
+      // console.error(err);
+      show('danger', 'Error', err.message || 'Failed to save image.')
     }
   };
 
@@ -194,7 +216,7 @@ export default function AnalysisScreen() {
 
   const handleAnalyze = async () => {
     if (!imageUri) {
-      Alert.alert("No image", "Please upload an image first.");
+      show('warning', 'No Image', 'Please upload an image first.')
       return;
     }
 
@@ -210,7 +232,7 @@ export default function AnalysisScreen() {
 
       setAnalyzedImageUri(imageUri);
     } catch (error: any) {
-      Alert.alert("Inference failed", error.message || "Something went wrong");
+      show('danger', 'Inference Failed', error.message || 'Something went wrong')
     } finally {
       setLoading(false);
     }
@@ -379,7 +401,7 @@ export default function AnalysisScreen() {
 
 
 
-            {/* File Name Input Popup */}
+      {/* File Name Input Popup */}
       <Modal
         visible={showFileNamePopup}
         transparent={true}

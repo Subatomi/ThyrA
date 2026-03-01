@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { router } from 'expo-router'
 const BASE_URL = "http://192.168.1.8:8000"; //your ip4 address. Place on env later
 
 // export async function apiRequest(endpoint, options = {}) {
@@ -42,13 +43,13 @@ const BASE_URL = "http://192.168.1.8:8000"; //your ip4 address. Place on env lat
 
 export async function apiRequest(endpoint, options = {}) {
   const token = await AsyncStorage.getItem("access_token");
-  console.log("TOKEN:", token);
-
+  console.log(token)
   const headers = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.body instanceof FormData
       ? {} //DO NOT set Content-Type
       : { "Content-Type": "application/json" }),
+  "Connection": "close", 
     ...options.headers,
   };
   try{
@@ -61,13 +62,25 @@ export async function apiRequest(endpoint, options = {}) {
       return { detail: "Successfully deleted" };
     }
 
+    // If the token is invalid/expired, force logout and redirect to sign-in
+    if (response.status === 401) {
+      try {
+        await AsyncStorage.removeItem('access_token')
+      } catch (e) {
+        // ignore
+      }
+      // navigate back to sign-in screen
+      try { router.replace('/sign-in') } catch (e) {}
+      throw new Error('Unauthorized')
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
       throw new Error(data.detail || "Check");
-    } 
+    }
 
-  return data;
+    return data;
 
     
   }catch(err){

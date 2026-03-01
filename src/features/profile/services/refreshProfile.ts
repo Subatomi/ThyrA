@@ -1,8 +1,6 @@
 import { getProfile } from 'api/auth';
 import { updateProfileCache, UserProfileCache } from './profileCache';
 
-// Fetches the profile from the server and updates the local cache.
-// Returns the cached data on success, or null on failure.
 export async function refreshProfileFromServer(): Promise<UserProfileCache | null> {
   try {
     const profile: any = await getProfile();
@@ -21,10 +19,8 @@ export async function refreshProfileFromServer(): Promise<UserProfileCache | nul
 
     const data: UserProfileCache = { firstName, lastName, email };
     await updateProfileCache(data);
-    if (__DEV__) console.log('[refreshProfile] updated cache', data);
     return data;
   } catch (e) {
-    if (__DEV__) console.log('[refreshProfile] failed', e);
     return null;
   }
 }

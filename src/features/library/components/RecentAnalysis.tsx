@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
+import { DeviceEventEmitter } from 'react-native'
 import AssessmentReportCard from './AssessmentReportCard';
 import { getRecentAnalyses } from '../../../../api/image';
 import { useRouter } from 'expo-router';
@@ -11,6 +12,7 @@ type RecentItem = {
   image_url: string;
   date?: string;
   detection_result?: any;
+  folder_id?: string;
 };
 
 type Props = {
@@ -23,8 +25,9 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Initial fetch
   useEffect(() => {
-    if (initialItems) return; // items provided by parent — don't fetch
+    if (initialItems) return;
 
     let mounted = true;
     async function fetchRecent() {
@@ -39,6 +42,7 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
             image_url: it.image_url,
             date: it.date ?? '',
             detection_result: it.detection_result ?? null,
+            folder_id: String(it.folder_id),
           }))
         );
       } catch (err) {
@@ -50,10 +54,74 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
     }
 
     fetchRecent();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false };
   }, [initialItems, limit]);
+
+  useEffect(() => {
+    // Add new item after upload
+    const addSub = DeviceEventEmitter.addListener('recentAnalyses', (payload: any) => {
+      if (!payload) {
+        (async () => {
+          setLoading(true)
+          try {
+            const data = await getRecentAnalyses(limit)
+            setItems((data || []).map((it: any) => ({
+              id: String(it.id),
+              image_name: it.image_name,
+              image_url: it.image_url,
+              date: it.date ?? '',
+              detection_result: it.detection_result ?? null,
+              folder_id: String(it.folder_id),
+            })))
+          } catch (e) {
+            console.error('Failed to refetch recent analyses', e)
+          } finally {
+            setLoading(false)
+          }
+        })()
+        return
+      }
+      if (payload.action === 'add' && payload.item) {
+        setItems((prev) => prev ? [payload.item, ...prev] : [payload.item])
+      }
+    })
+
+    // Remove deleted item
+    const removeSub = DeviceEventEmitter.addListener('recentAnalyses:remove', (payload: any) => {
+      if (!payload?.id) return
+      setItems((prev) => prev ? prev.filter((r) => r.id !== payload.id) : prev)
+      ;(async () => {
+        try {
+          const data = await getRecentAnalyses(limit)
+          setItems((data || []).map((it: any) => ({
+            id: String(it.id),
+            image_name: it.image_name,
+            image_url: it.image_url,
+            date: it.date ?? '',
+            detection_result: it.detection_result ?? null,
+            folder_id: String(it.folder_id),
+          })))
+        } catch (e) {
+          console.error('Failed to refetch after delete', e)
+        }
+      })()
+    })
+
+    // Sync rename from any screen
+    const renameSub = DeviceEventEmitter.addListener('report:rename', (payload: any) => {
+      if (!payload?.id) return
+      setItems((prev) => prev
+        ? prev.map((r) => r.id === payload.id ? { ...r, image_name: payload.name } : r)
+        : prev
+      )
+    })
+
+    return () => {
+      addSub.remove()
+      removeSub.remove()
+      renameSub.remove()
+    }
+  }, [limit])
 
   if (loading) return <ActivityIndicator />;
   if (!items || items.length === 0) return null;
@@ -68,13 +136,13 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
             date={item.date ?? ''}
             imageSource={{ uri: item.image_url }}
             onPress={() => {
-              console.log('pressed', item.id);
               router.push({
                 pathname: '/report-analysis',
                 params: {
                   image: encodeURIComponent(item.image_url),
                   reportId: item.id,
                   reportName: item.image_name,
+                  folderId: item.folder_id,
                   reportDecode: item.detection_result
                     ? JSON.stringify({ detection_result: item.detection_result })
                     : '',
@@ -85,7 +153,6 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
         ))}
       </View>
     </ScrollView>
-
   );
 };
 

@@ -156,11 +156,14 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
           {/* Bottom profile card */}
           <View className='px-4 pb-3'>
             <View className="h-px bg-gray-200 my-3" />
-            <TouchableOpacity className="flex-row items-center justify-between px-1 mb-3">
+            <TouchableOpacity className="flex-row items-center justify-between px-1 mb-3"  onPress={() => {
+                  onClose()
+                  setTimeout(() => router.push('/profile'), 200)
+                }}>
               <View className="flex-row items-center">
                 <Image source={require('assets/icons/sample_profile_1.png')} className="w-10 h-10 rounded-full bg-gray-300 mr-3" />
                 <View>
-                  <Text className="text-xs text-gray-500">Welcome back 👋</Text>
+                  <Text className="text-xs text-gray-500">Welcome back </Text>
                   <Text className="text-xl font-bold">{displayName}</Text>
                 </View>
               </View>
