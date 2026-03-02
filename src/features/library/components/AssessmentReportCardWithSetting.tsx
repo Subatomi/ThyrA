@@ -43,8 +43,8 @@ const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, on
         >
           {title}
         </Text>
-        <Text className="text-xs text-gray-500 mt-1 uppercase tracking-widest">
-          {date}
+        <Text className="text-base text-gray-400 font-bold uppercase tracking-widest">
+          {date ? date.split('T')[0] : ''}
         </Text>
       </View>
     </Pressable>

@@ -115,21 +115,21 @@ export default function ProfileDashboardScreen() {
             <View className="mt-3">
               <Text className="text-lg font-extrabold mb-2">Details</Text>
               <View className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100" onPress={() => setFirstModalVisible(true)}>
+                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100">
                   <View>
                     <Text className="text-xs text-gray-500">First name</Text>
                     <Text className="text-base text-gray-800">{firstName}</Text>
                   </View>
                 </Pressable>
 
-                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100" onPress={() => setLastModalVisible(true)}>
+                <Pressable className="flex-row items-center justify-between px-4 py-4 border-b border-gray-100" >
                   <View className='flex-1'>
                     <Text className="text-xs text-gray-500">Last name</Text>
                     <Text className="text-base text-gray-800">{lastName}</Text>
                   </View>
                 </Pressable>
 
-                <Pressable className="flex-row items-center justify-between px-4 py-4" onPress={() => setEmailModalVisible(true)}>
+                <Pressable className="flex-row items-center justify-between px-4 py-4" >
                   <View className='flex-1'>
                     <Text className="text-xs text-gray-500">Email</Text>
                     <Text className="text-base text-gray-800">{email}</Text>

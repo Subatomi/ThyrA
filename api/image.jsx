@@ -1,4 +1,5 @@
 import { apiRequest } from "./client";
+import {File} from 'expo-file-system';
 
 export async function runInference(image) {
   try {
@@ -26,13 +27,66 @@ export async function runInference(image) {
   }
 }
 
-export async function uploadImage({
-  image,
-  imageName,
-  folderId,
-  detectionResult = null,
-}) {
+// export async function uploadImage({
+//   image,
+//   imageName,
+//   folderId,
+//   detectionResult = null,
+// }) {
+//   try {
+//     const formData = new FormData();
+
+//     console.log("Image object:", {
+//       uri: image.uri,
+//       type: image.type,
+//       fileName: image.fileName,
+//       fileSize: image.fileSize,
+//     });
+
+//     // IMAGE FILE
+//     formData.append("image", {
+//       uri: image.uri,
+//       type: image.type || "image/jpeg",
+//       name: image.fileName || "photo.jpg",
+//     });
+
+//     // REQUIRED FORM FIELDS
+//     formData.append("image_name", imageName);
+//     formData.append("folder_id", String(folderId)); // MUST be string
+
+//     // OPTIONAL FIELD
+//     if (detectionResult) {
+//       formData.append(
+//         "detection_result",
+//         JSON.stringify(detectionResult) // backend expects JSON string
+//       );
+//     }
+
+//     console.log('Uploading image', { imageName, folderId, uri: image.uri })
+//     const response = await apiRequest("/image/upload", {
+//       method: "POST",
+//       body: formData,
+//       headers: {
+//         // DO NOT set Content-Type
+//         // Authorization handled in apiRequest
+//       },
+//     });
+
+//     return response;
+//   } catch (err) {
+//     console.error("Upload image error:", err);
+//     throw err;
+//   }
+// }
+
+export async function uploadImage({ image, imageName, folderId, detectionResult = null }) {
   try {
+    const file = new File(image.uri);
+
+    if (!file.exists) {
+      throw new Error("Image file does not exist at: " + image.uri);
+    }
+
     const formData = new FormData();
 
     // IMAGE FILE
@@ -41,7 +95,7 @@ export async function uploadImage({
       type: image.type || "image/jpeg",
       name: image.fileName || "photo.jpg",
     });
-
+    
     // REQUIRED FORM FIELDS
     formData.append("image_name", imageName);
     formData.append("folder_id", String(folderId)); // MUST be string
@@ -49,7 +103,7 @@ export async function uploadImage({
     // OPTIONAL FIELD
     if (detectionResult) {
       formData.append(
-        "detection_result",
+        "detection_result", 
         JSON.stringify(detectionResult) // backend expects JSON string
       );
     }
@@ -84,4 +138,10 @@ export const updateImageName = async (imageId, newName) => {
     body: JSON.stringify({ image_name: newName }),
   })
   return response
+}
+
+export function getRecentAnalyses(limit = 3) {
+  return apiRequest(`/image/recent?limit=${limit}`, {
+    method: 'GET',
+  });
 }

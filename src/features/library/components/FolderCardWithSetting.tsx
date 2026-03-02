@@ -36,7 +36,7 @@ const FolderCard = ({ id, title, onPress, onMenuPress }: FolderCardProps) => {
 
   return (
     <Pressable
-      onPress={handlePress}  // 👈 use this
+      onPress={handlePress}  
       onLongPress={() =>
         openActionBar({
           onEdit: () => {

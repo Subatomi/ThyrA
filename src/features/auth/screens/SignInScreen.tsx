@@ -28,17 +28,11 @@ const SignInScreen: React.FC = () => {
 				password,
 			});
 
-			console.log("Log In success:", response);
 			const token = response?.access_token;
 			if (!token || typeof token !== 'string') {
 				throw new Error('Login did not return access_token');
 			}
 			await AsyncStorage.setItem('access_token', token);
-			if (__DEV__) {
-				const stored = await AsyncStorage.getItem('access_token');
-				console.log('[login] saved token length:', stored?.length, 'startsWith:', stored?.slice(0, 12));
-			}
-
 			// Refresh profile cache before navigating
 			await refreshProfileFromServer();
 			
