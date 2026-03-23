@@ -210,6 +210,7 @@ import { useToast } from '../../../contexts/ToastContext'
 import { ResumableZoom } from 'react-native-zoom-toolkit'  // ← added
 
 const screenWidth = Dimensions.get('window').width
+const detectionWidth = screenWidth - 72; 
 
 export default function ReportScreen() {
   const { image, reportId, reportName, reportDecode } = useLocalSearchParams<{
@@ -285,26 +286,29 @@ export default function ReportScreen() {
           <>
             <View className='bg-white rounded-md p-4 overflow-hidden' style={{ elevation: 1 }}>
               {/* ResumableZoom wraps only the detection view, not the whole card */}
-              <ResumableZoom maxScale={8} minScale={1}>
-                <View
-                  ref={detectionRef}
-                  collapsable={false}
-                  style={{
-                    width: screenWidth - 72, // screen width - scroll padding (20×2) - card padding (16×2)
-                    aspectRatio: imageSize!.width / imageSize!.height,
-                    marginVertical: 10,
-                  }}
-                  onLayout={() => setIsLayoutReady(true)}
-                >
-                  <DetectionOverlay
-                    imageUri={imageUri!}
-                    thyrocytes={result.detection_result.thyrocytes}
-                    clusters={result.detection_result.clusters}
-                    originalWidth={imageSize!.width}
-                    originalHeight={imageSize!.height}
-                  />
-                </View>
-              </ResumableZoom>
+              <View style={{overflow:'hidden'}}>
+                <ResumableZoom maxScale={8} minScale={1}>
+                  <View
+                    ref={detectionRef}
+                    collapsable={false}
+                    style={{
+                      width: detectionWidth, // screen width - scroll padding (20×2) - card padding (16×2)
+                      aspectRatio: imageSize!.width / imageSize!.height,
+                      marginVertical: 10,
+                    }}
+                    onLayout={() => setIsLayoutReady(true)}
+                  >
+                    <DetectionOverlay
+                      imageUri={imageUri!}
+                      thyrocytes={result.detection_result.thyrocytes}
+                      clusters={result.detection_result.clusters}
+                      originalWidth={imageSize.width * 2} 
+                      originalHeight={imageSize.height * 2} 
+                      displayWidth={detectionWidth}
+                    />
+                  </View>
+                </ResumableZoom>
+              </View>
             </View>
 
             <View className='bg-white rounded-md p-4 gap-4' style={{ elevation: 1 }}>

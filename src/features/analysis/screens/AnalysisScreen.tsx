@@ -460,7 +460,7 @@
 //   );
 // }
 
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput, Dimensions, PixelRatio } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
@@ -472,7 +472,6 @@ import { ScanSearch } from 'lucide-react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
 import { Button } from 'react-native';
-import { Dimensions } from 'react-native';
 import { getFolders } from '../../../../api/folder'
 import { uploadImage } from '../../../../api/image';
 import { DeviceEventEmitter } from 'react-native';
@@ -584,12 +583,16 @@ export default function AnalysisScreen() {
 
   useEffect(() => {
     if (!imageUri) return;
-    Image.getSize(
-      imageUri,
-      (width, height) => setImageSize({ width, height }),
-      () => {}
-    );
+
+    Image.getSize(imageUri, (w, h) => {
+      setImageSize({
+        width: w * 2,   // scale to model size
+        height: h * 2,
+      });
+    });
   }, [imageUri]);
+
+  
 
   useEffect(() => {
     if (typeof image === 'string') {
@@ -642,8 +645,15 @@ export default function AnalysisScreen() {
       setResult(null);
       const imagePayload = getImageMetaFromUri(imageUri);
       const response = await runInference(imagePayload);
+      Image.getSize(imageUri, (w, h) => {
+          setImageSize({ width: w, height: h }) 
+      })
       setResult(response);
       setAnalyzedImageUri(imageUri);
+      setImageSize({ 
+          width: response.detections.image_width,
+          height: response.detections.image_height
+      })
     } catch (error: any) {
       show('danger', 'Inference Failed', error.message || 'Something went wrong')
     } finally {
@@ -713,7 +723,8 @@ export default function AnalysisScreen() {
               ResumableZoom lives HERE in AnalysisScreen, not inside DetectionOverlay.
               The inner View with ref is what gets captured for download.
             */}
-            <ResumableZoom maxScale={8} minScale={1}>
+            <View style={{overflow:'hidden'}}>
+            <ResumableZoom maxScale={8} minScale={1} >
               <View
                 ref={detectionRef}
                 collapsable={false}
@@ -728,11 +739,13 @@ export default function AnalysisScreen() {
                   imageUri={analyzedImageUri}
                   thyrocytes={result.detections?.thyrocytes}
                   clusters={result.detections?.clusters}
-                  originalWidth={imageSize.width}
-                  originalHeight={imageSize.height}
+                  originalWidth={imageSize.width * 2}  
+                  originalHeight={imageSize.height * 2}
+                  displayWidth={detectionWidth}
                 />
               </View>
             </ResumableZoom>
+            </View>
 
             {/* LEGEND */}
             <View className="flex-row justify-start items-center gap-4">
