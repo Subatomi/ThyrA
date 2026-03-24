@@ -302,8 +302,8 @@ export default function ReportScreen() {
                       imageUri={imageUri!}
                       thyrocytes={result.detection_result.thyrocytes}
                       clusters={result.detection_result.clusters}
-                      originalWidth={imageSize.width * 2} 
-                      originalHeight={imageSize.height * 2} 
+                      originalWidth={imageSize.width} 
+                      originalHeight={imageSize.height} 
                       displayWidth={detectionWidth}
                     />
                   </View>

@@ -586,8 +586,8 @@ export default function AnalysisScreen() {
 
     Image.getSize(imageUri, (w, h) => {
       setImageSize({
-        width: w * 2,   // scale to model size
-        height: h * 2,
+        width: w ,   // scale to model size
+        height: h ,
       });
     });
   }, [imageUri]);
@@ -739,8 +739,8 @@ export default function AnalysisScreen() {
                   imageUri={analyzedImageUri}
                   thyrocytes={result.detections?.thyrocytes}
                   clusters={result.detections?.clusters}
-                  originalWidth={imageSize.width * 2}  
-                  originalHeight={imageSize.height * 2}
+                  originalWidth={imageSize.width}  
+                  originalHeight={imageSize.height}
                   displayWidth={detectionWidth}
                 />
               </View>
