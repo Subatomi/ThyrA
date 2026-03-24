@@ -210,7 +210,7 @@ import { useToast } from '../../../contexts/ToastContext'
 import { ResumableZoom } from 'react-native-zoom-toolkit'  // ← added
 
 const screenWidth = Dimensions.get('window').width
-const detectionWidth = screenWidth - 72; 
+const detectionWidth = screenWidth - 72;
 
 export default function ReportScreen() {
   const { image, reportId, reportName, reportDecode, originalWidth, originalHeight } = useLocalSearchParams<{
@@ -299,7 +299,7 @@ export default function ReportScreen() {
           <>
             <View className='bg-white rounded-md p-4 overflow-hidden' style={{ elevation: 1 }}>
               {/* ResumableZoom wraps only the detection view, not the whole card */}
-              <View style={{overflow:'hidden'}}>
+              <View style={{ overflow: 'hidden' }}>
                 <ResumableZoom maxScale={8} minScale={1}>
                   <View
                     ref={detectionRef}
@@ -326,20 +326,22 @@ export default function ReportScreen() {
             </View>
 
             <View className='bg-white rounded-md p-4 gap-4' style={{ elevation: 1 }}>
-              <View>
-                <Text className="text-gray-800 font-bold">Legend</Text>
-                <View className='flex-row gap-4 mt-2'>
-                  <View className="flex-row items-center gap-2">
-                    <View className="w-4 h-4 bg-green-500 rounded-sm" />
-                    <Text className="text-gray-800 text-sm">Adequate</Text>
-                  </View>
-                  <View className="flex-row items-center gap-2">
-                    <View className="w-4 h-4 bg-blue-500 rounded-sm" />
-                    <Text className="text-gray-800 text-sm">Inadequate</Text>
-                  </View>
+              {/* NEW legend — paste this in its place */}
+              <View className="flex-row justify-start items-center gap-4 flex-wrap">
+                <View className="flex-row items-center gap-2">
+                  <View className="w-4 h-4 bg-green-500 rounded-sm" />
+                  <Text className="text-gray-800 text-sm">Adequate</Text>
+                </View>
+                <View className="flex-row items-center gap-2">
+                  <View className="w-4 h-4 bg-blue-500 rounded-sm" />
+                  <Text className="text-gray-800 text-sm">Inadequate</Text>
+                </View>
+                {/* NEW */}
+                <View className="flex-row items-center gap-2">
+                  <View className="w-4 h-4 bg-red-500 rounded-sm" />
+                  <Text className="text-gray-800 text-sm">Isolated</Text>
                 </View>
               </View>
-
               <Pressable onPress={handleDownload}>
                 {({ pressed }) => (
                   <View

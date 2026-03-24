@@ -480,7 +480,7 @@ import { ResumableZoom } from 'react-native-zoom-toolkit'
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function AnalysisScreen() {
-  const emit = DeviceEventEmitter.emit.bind(DeviceEventEmitter) 
+  const emit = DeviceEventEmitter.emit.bind(DeviceEventEmitter)
   const { show } = useToast()
   type FolderType = {
     id: string;
@@ -600,7 +600,7 @@ export default function AnalysisScreen() {
     }
   }, [imageUri]);
 
-  
+
 
   useEffect(() => {
     if (typeof image === 'string') {
@@ -736,32 +736,32 @@ export default function AnalysisScreen() {
               ResumableZoom lives HERE in AnalysisScreen, not inside DetectionOverlay.
               The inner View with ref is what gets captured for download.
             */}
-            <View style={{overflow:'hidden'}}>
-            <ResumableZoom maxScale={8} minScale={1} >
-              <View
-                ref={detectionRef}
-                collapsable={false}
-                style={{
-                  width: detectionWidth,
-                  aspectRatio: imageSize.width / imageSize.height,
-                  marginVertical: 10,
-                }}
-                onLayout={() => setIsLayoutReady(true)}
-              >
-                <DetectionOverlay
-                  imageUri={analyzedImageUri}
-                  thyrocytes={result.detections?.thyrocytes}
-                  clusters={result.detections?.clusters}
-                  originalWidth={imageSize.width}  
-                  originalHeight={imageSize.height}
-                  displayWidth={detectionWidth}
-                />
-              </View>
-            </ResumableZoom>
+            <View style={{ overflow: 'hidden' }}>
+              <ResumableZoom maxScale={8} minScale={1} >
+                <View
+                  ref={detectionRef}
+                  collapsable={false}
+                  style={{
+                    width: detectionWidth,
+                    aspectRatio: imageSize.width / imageSize.height,
+                    marginVertical: 10,
+                  }}
+                  onLayout={() => setIsLayoutReady(true)}
+                >
+                  <DetectionOverlay
+                    imageUri={analyzedImageUri}
+                    thyrocytes={result.detections?.thyrocytes}
+                    clusters={result.detections?.clusters}
+                    originalWidth={imageSize.width}
+                    originalHeight={imageSize.height}
+                    displayWidth={detectionWidth}
+                  />
+                </View>
+              </ResumableZoom>
             </View>
 
-            {/* LEGEND */}
-            <View className="flex-row justify-start items-center gap-4">
+            {/* NEW legend — paste this in its place */}
+            <View className="flex-row justify-start items-center gap-4 flex-wrap">
               <View className="flex-row items-center gap-2">
                 <View className="w-4 h-4 bg-green-500 rounded-sm" />
                 <Text className="text-gray-800 text-sm">Adequate</Text>
@@ -769,6 +769,11 @@ export default function AnalysisScreen() {
               <View className="flex-row items-center gap-2">
                 <View className="w-4 h-4 bg-blue-500 rounded-sm" />
                 <Text className="text-gray-800 text-sm">Inadequate</Text>
+              </View>
+              {/* NEW */}
+              <View className="flex-row items-center gap-2">
+                <View className="w-4 h-4 bg-red-500 rounded-sm" />
+                <Text className="text-gray-800 text-sm">Isolated</Text>
               </View>
             </View>
 

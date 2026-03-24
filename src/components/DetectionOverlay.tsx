@@ -185,7 +185,8 @@ type BBox = [number, number, number, number]
 
 type Thyrocyte = {
     bbox: BBox
-    confidence: number
+    confidence: number,
+    status?: 'Adequate' | 'Inadequate' | 'Isolated'
 }
 
 type Cluster = {
@@ -253,9 +254,15 @@ export default function DetectionOverlay({
                 )
             })}
 
-            {/* THYROCYTES */}
+            {/* THYROCYTES — NEW: color based on status */}
             {thyrocytes.map((t, i) => {
                 const [x1, y1, x2, y2] = t.bbox
+
+                // NEW: pick color from status
+                const color =
+                    t.status === 'Adequate'   ? '#22c55e' :
+                    t.status === 'Inadequate' ? '#3b82f6' :
+                    '#ef4444'  // Isolated = red (default)
 
                 return (
                     <View
@@ -267,6 +274,7 @@ export default function DetectionOverlay({
                                 top: y1 * scaleY,
                                 width: (x2 - x1) * scaleX,
                                 height: (y2 - y1) * scaleY,
+                                borderColor: color,   // ← NEW
                             },
                         ]}
                     />
@@ -297,12 +305,11 @@ const styles = StyleSheet.create({
     clusterLabelText: {
         color: 'white',
         fontSize: 4,
-        //fontWeight: '400',
     },
     cellBox: {
         position: 'absolute',
         borderWidth: 0.5,
-        borderColor: 'red',
         borderRadius: 2,
+        // borderColor is now set dynamically above, not here
     },
 })
