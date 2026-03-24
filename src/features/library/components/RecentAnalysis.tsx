@@ -13,6 +13,8 @@ type RecentItem = {
   date?: string;
   detection_result?: any;
   folder_id?: string;
+  original_width?: number;
+  original_height?: number;
 };
 
 type Props = {
@@ -43,6 +45,8 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
             date: it.date ?? '',
             detection_result: it.detection_result ?? null,
             folder_id: String(it.folder_id),
+            original_width: it.original_width,
+            original_height: it.original_height,
           }))
         );
       } catch (err) {
@@ -72,6 +76,8 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
               date: it.date ?? '',
               detection_result: it.detection_result ?? null,
               folder_id: String(it.folder_id),
+              original_width: it.original_width,
+              original_height: it.original_height,
             })))
           } catch (e) {
             console.error('Failed to refetch recent analyses', e)
@@ -100,6 +106,8 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
             date: it.date ?? '',
             detection_result: it.detection_result ?? null,
             folder_id: String(it.folder_id),
+            original_width: it.original_width,
+            original_height: it.original_height,
           })))
         } catch (e) {
           console.error('Failed to refetch after delete', e)
@@ -143,9 +151,9 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
                   reportId: item.id,
                   reportName: item.image_name,
                   folderId: item.folder_id,
-                  reportDecode: item.detection_result
-                    ? JSON.stringify({ detection_result: item.detection_result })
-                    : '',
+                  reportDecode: JSON.stringify(item),
+                  originalWidth: item.original_width?.toString() || '',
+                  originalHeight: item.original_height?.toString() || '',
                 },
               });
             }}

@@ -476,7 +476,8 @@ import { getFolders } from '../../../../api/folder'
 import { uploadImage } from '../../../../api/image';
 import { DeviceEventEmitter } from 'react-native';
 import { useToast } from '../../../contexts/ToastContext'
-import { ResumableZoom } from 'react-native-zoom-toolkit'  // ← added
+import { ResumableZoom } from 'react-native-zoom-toolkit'  
+import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function AnalysisScreen() {
   const emit = DeviceEventEmitter.emit.bind(DeviceEventEmitter) 
@@ -542,6 +543,14 @@ export default function AnalysisScreen() {
     try {
       setLoading(true)
       setShowFileNamePopup(false)
+      
+      // Ensure we have the image size before uploading
+      let finalImageSize = imageSize
+      if (!finalImageSize) {
+        finalImageSize = await getOriginalImageSize(imageUri)
+        setImageSize(finalImageSize)
+      }
+      
       const imagePayload = getImageMetaFromUri(imageUri)
       const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
       const created = await uploadImage({
@@ -549,6 +558,8 @@ export default function AnalysisScreen() {
         imageName: finalFileName,
         folderId: selectedFolder.id,
         detectionResult: result?.detections,
+        originalWidth: finalImageSize?.width,
+        originalHeight: finalImageSize?.height, 
       })
       if (created && created.id) {
         const createdItem = {
@@ -558,6 +569,8 @@ export default function AnalysisScreen() {
           image_url: created.image_url ?? imageUri,
           detection_result: created.detection_result ?? result?.detections ?? null,
           folder_id: selectedFolder.id,
+          original_width: finalImageSize?.width,
+          original_height: finalImageSize?.height,
         }
         emit(`folder:${selectedFolder.id}`, { action: 'add', item: createdItem })
         emit('recentAnalyses', { action: 'add', item: createdItem })
@@ -582,14 +595,9 @@ export default function AnalysisScreen() {
   }
 
   useEffect(() => {
-    if (!imageUri) return;
-
-    Image.getSize(imageUri, (w, h) => {
-      setImageSize({
-        width: w ,   // scale to model size
-        height: h ,
-      });
-    });
+    if (imageUri) {
+      getOriginalImageSize(imageUri).then(setImageSize);
+    }
   }, [imageUri]);
 
   
@@ -635,6 +643,11 @@ export default function AnalysisScreen() {
     return { uri, fileName: filename, type: mimeTypes[ext] || 'image/jpeg' };
   };
 
+  const getOriginalImageSize = async (uri: string) => {
+    const result = await ImageManipulator.manipulateAsync(uri, [], { base64: false });
+    return { width: result.width, height: result.height };
+  };
+
   const handleAnalyze = async () => {
     if (!imageUri) {
       show('warning', 'No Image', 'Please upload an image first.')
@@ -643,17 +656,17 @@ export default function AnalysisScreen() {
     try {
       setLoading(true);
       setResult(null);
+      setAnalyzedImageUri(null);
+
       const imagePayload = getImageMetaFromUri(imageUri);
       const response = await runInference(imagePayload);
-      Image.getSize(imageUri, (w, h) => {
-          setImageSize({ width: w, height: h }) 
-      })
+
       setResult(response);
       setAnalyzedImageUri(imageUri);
-      setImageSize({ 
-          width: response.detections.image_width,
-          height: response.detections.image_height
-      })
+      // setImageSize({ 
+      //     width: response.detections.image_width,
+      //     height: response.detections.image_height
+      // })
     } catch (error: any) {
       show('danger', 'Inference Failed', error.message || 'Something went wrong')
     } finally {

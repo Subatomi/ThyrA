@@ -79,7 +79,7 @@ export async function runInference(image) {
 //   }
 // }
 
-export async function uploadImage({ image, imageName, folderId, detectionResult = null }) {
+export async function uploadImage({ image, imageName, folderId, detectionResult = null, originalWidth, originalHeight}) {
   try {
     const file = new File(image.uri);
 
@@ -106,6 +106,13 @@ export async function uploadImage({ image, imageName, folderId, detectionResult 
         "detection_result", 
         JSON.stringify(detectionResult) // backend expects JSON string
       );
+    }
+
+    if (originalWidth) {
+      formData.append("original_width", String(originalWidth));
+    }
+    if (originalHeight) {
+      formData.append("original_height", String(originalHeight));
     }
 
     const response = await apiRequest("/image/upload", {

@@ -13,6 +13,8 @@ type RecentItem = {
   image_url: string
   date: string
   detection_result: any | null
+  original_width?: number
+  original_height?: number
 }
 
 function mapToRecentItem(raw: any): RecentItem {
@@ -22,6 +24,8 @@ function mapToRecentItem(raw: any): RecentItem {
     image_url: raw.image_url,
     date: raw.date ?? '',
     detection_result: raw.detection_result ?? null,
+    original_width: raw.original_width,
+    original_height: raw.original_height,
   }
 }
 

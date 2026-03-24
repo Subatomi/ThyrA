@@ -213,11 +213,13 @@ const screenWidth = Dimensions.get('window').width
 const detectionWidth = screenWidth - 72; 
 
 export default function ReportScreen() {
-  const { image, reportId, reportName, reportDecode } = useLocalSearchParams<{
+  const { image, reportId, reportName, reportDecode, originalWidth, originalHeight } = useLocalSearchParams<{
     image?: string
     reportId?: string
     reportName?: string
     reportDecode?: string
+    originalWidth?: string
+    originalHeight?: string
   }>()
 
   const { deleteReport, renameReport } = useReportActions()
@@ -236,12 +238,24 @@ export default function ReportScreen() {
   const detectionRef = useRef<View>(null)
 
   useEffect(() => {
-    if (reportDecode) setResult(JSON.parse(reportDecode))
+    if (reportDecode) {
+      const parsed = JSON.parse(reportDecode)
+      setResult(parsed)
+      // Extract dimensions from the parsed object (from backend)
+      console.log('Full parsed reportDecode:', JSON.stringify(parsed, null, 2))
+      console.log('Dimensions from database:', { 
+        original_width: parsed.original_width, 
+        original_height: parsed.original_height 
+      })
+    }
   }, [reportDecode])
 
   useEffect(() => {
     if (!imageUri) return
-    Image.getSize(imageUri, (width, height) => setImageSize({ width, height }))
+    Image.getSize(imageUri, (width, height) => {
+      console.log('Image.getSize result:', { width, height })
+      setImageSize({ width, height })
+    })
   }, [imageUri])
 
   useEffect(() => {
@@ -269,7 +283,6 @@ export default function ReportScreen() {
   }
 
   const hasResult = result?.detection_result?.thyrocytes && imageSize && imageUri
-
   return (
     <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
       <View className='w-full flex-row items-center mb-4 gap-4'>
@@ -298,12 +311,13 @@ export default function ReportScreen() {
                     }}
                     onLayout={() => setIsLayoutReady(true)}
                   >
+                    
                     <DetectionOverlay
                       imageUri={imageUri!}
                       thyrocytes={result.detection_result.thyrocytes}
                       clusters={result.detection_result.clusters}
-                      originalWidth={imageSize.width} 
-                      originalHeight={imageSize.height} 
+                      originalWidth={originalWidth ? parseInt(originalWidth) : (result?.original_width || imageSize!.width)}
+                      originalHeight={originalHeight ? parseInt(originalHeight) : (result?.original_height || imageSize!.height)}
                       displayWidth={detectionWidth}
                     />
                   </View>

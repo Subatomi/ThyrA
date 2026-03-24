@@ -39,6 +39,8 @@ export interface ReportItem {
   date: string
   image: { uri: string }
   detection_result: DetectionResult | null
+  original_width?: number
+  original_height?: number
 }
 
 export default function ReportFolderScreen() {
@@ -68,13 +70,17 @@ export default function ReportFolderScreen() {
     async function fetchImages() {
       try {
         const data = await getImagesByFolder(Number(folderId))
+        console.log('API response first item:', data[0])
         const mappedReports: ReportItem[] = data.map((img: any) => ({
           id: String(img.id),
           image_name: img.image_name,
           date: img.date ?? '',
           image: { uri: img.image_url },
           detection_result: img.detection_result as DetectionResult | null,
+          original_width: img.original_width,   
+          original_height: img.original_height  
         }))
+        console.log('Mapped reports first item:', mappedReports[mappedReports.length - 1])
         setReports(mappedReports)
       } catch (error) {
         console.error("Failed to fetch images", error)
@@ -95,6 +101,8 @@ export default function ReportFolderScreen() {
         date: item.date,
         image: { uri: item.image_url },  
         detection_result: item.detection_result,
+        original_width: item.original_width,
+        original_height: item.original_height,
       }, ...prev])
       return
     } else {
@@ -109,6 +117,8 @@ export default function ReportFolderScreen() {
             date: img.date ?? '',
             image: { uri: img.image_url },
             detection_result: img.detection_result as DetectionResult | null,
+            original_width: img.original_width,
+            original_height: img.original_height,
           })))
         } catch (e) {
           console.error('Failed to refetch images', e)
@@ -149,6 +159,11 @@ export default function ReportFolderScreen() {
   function handleCardPress(reportId: string) {
     const report = reports.find(r => r.id === reportId)
     if (!report) return
+    
+    console.log('Navigating to report with dimensions:', { 
+      original_width: report.original_width, 
+      original_height: report.original_height 
+    })
 
     router.push({
       pathname: '/report-analysis',
@@ -158,6 +173,8 @@ export default function ReportFolderScreen() {
         reportName: report.image_name,
         folderId: numericFolderId,
         reportDecode: report.detection_result ? JSON.stringify(report) : '',
+        originalWidth: report.original_width?.toString() || '',
+        originalHeight: report.original_height?.toString() || '',
       },
     })
 
