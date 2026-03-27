@@ -476,7 +476,7 @@ import { getFolders } from '../../../../api/folder'
 import { uploadImage } from '../../../../api/image';
 import { DeviceEventEmitter } from 'react-native';
 import { useToast } from '../../../contexts/ToastContext'
-import { ResumableZoom } from 'react-native-zoom-toolkit'  
+import { ResumableZoom } from 'react-native-zoom-toolkit'
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function AnalysisScreen() {
@@ -514,6 +514,8 @@ export default function AnalysisScreen() {
   const [analyzing, setAnalyzing] = useState(false)
   const [downloading, setDownloading] = useState(false)
 
+  const captureRef2 = useRef<View>(null);
+
   const handleSaveImage = async () => {
     try {
       setFoldersLoading(true)
@@ -546,14 +548,14 @@ export default function AnalysisScreen() {
     try {
       setSavingImage(true)
       setShowFileNamePopup(false)
-      
+
       // Ensure we have the image size before uploading
       let finalImageSize = imageSize
       if (!finalImageSize) {
         finalImageSize = await getOriginalImageSize(imageUri)
         setImageSize(finalImageSize)
       }
-      
+
       const imagePayload = getImageMetaFromUri(imageUri)
       const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
       const created = await uploadImage({
@@ -562,7 +564,7 @@ export default function AnalysisScreen() {
         folderId: selectedFolder.id,
         detectionResult: result?.detections,
         originalWidth: finalImageSize?.width,
-        originalHeight: finalImageSize?.height, 
+        originalHeight: finalImageSize?.height,
       })
       if (created && created.id) {
         const createdItem = {
@@ -622,16 +624,16 @@ export default function AnalysisScreen() {
     }
     try {
       setDownloading(true);
-      
+
       const { status } = await MediaLibrary.requestPermissionsAsync(true);
       if (status !== 'granted') {
         show('warning', 'Permission Denied', 'Cannot save image without permission.')
         return;
       }
 
-      
+
       // Permission is granted, save directly
-      const imageUri = await captureRef(detectionRef, { format: 'png', quality: 1 });
+      const imageUri = await captureRef(captureRef2, { format: 'png', quality: 1 });
       const asset = await MediaLibrary.createAssetAsync(imageUri);
       await MediaLibrary.createAlbumAsync('DetectionResults', asset, false);
       show('success', 'Saved', 'Image saved to your gallery!')
@@ -697,7 +699,9 @@ export default function AnalysisScreen() {
     </TouchableOpacity>
   )
 
-  const detectionWidth = screenWidth - 40
+  const CAPTURE_PADDING = 5;
+  const detectionWidth = screenWidth - 40;
+  const captureImageWidth = detectionWidth - CAPTURE_PADDING * 2;
 
   return (
     <ScrollView className="flex-1 bg-gray-100"
@@ -748,24 +752,34 @@ export default function AnalysisScreen() {
             */}
             <View style={{ overflow: 'hidden' }}>
               <ResumableZoom maxScale={8} minScale={1} >
-                <View
-                  ref={detectionRef}
-                  collapsable={false}
-                  style={{
-                    width: detectionWidth,
-                    aspectRatio: imageSize.width / imageSize.height,
-                    marginVertical: 10,
-                  }}
-                  onLayout={() => setIsLayoutReady(true)}
-                >
-                  <DetectionOverlay
-                    imageUri={analyzedImageUri}
-                    thyrocytes={result.detections?.thyrocytes}
-                    clusters={result.detections?.clusters}
-                    originalWidth={imageSize.width}
-                    originalHeight={imageSize.height}
-                    displayWidth={detectionWidth}
-                  />
+                  <View
+                    ref={captureRef2}
+                    collapsable={false}
+                    style={{
+                      backgroundColor: 'white', // or any background color you want
+                      padding: CAPTURE_PADDING,
+                    }}
+                  >
+                    <View
+                      ref={detectionRef}
+                      collapsable={false}
+                      style={{
+                        width: captureImageWidth,
+                        aspectRatio: imageSize.width / imageSize.height,
+                        marginVertical: 10,
+                      }}
+                      onLayout={() => setIsLayoutReady(true)}
+                    >
+
+                      <DetectionOverlay
+                        imageUri={analyzedImageUri}
+                        thyrocytes={result.detections?.thyrocytes}
+                        clusters={result.detections?.clusters}
+                        originalWidth={imageSize.width}
+                        originalHeight={imageSize.height}
+                        displayWidth={captureImageWidth} 
+                      />
+                    </View>
                 </View>
               </ResumableZoom>
             </View>
