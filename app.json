@@ -23,7 +23,14 @@
       },
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -39,9 +46,19 @@
         "expo-media-library",
         {
           "photosPermission": "Allow access to save analysis results to your gallery.",
-          "savePhotosPermission": "Allow saving results to your device."
+          "savePhotosPermission": "Allow saving results to your device.",
+          "isAccessMediaLocationEnabled": true,
+          "granularPermissions": [
+            "photo"
+          ]
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fc7d1aa6-7f4f-47ea-9175-6fd36e826cf9"
+      }
+    }
   }
 }

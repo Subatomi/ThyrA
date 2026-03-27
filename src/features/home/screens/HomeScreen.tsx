@@ -1,8 +1,9 @@
-import { ScrollView, Text, View, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useRouter } from 'expo-router';
 import { FileQuestionMark } from 'lucide-react-native';
 import RecentAnalysis from '@/features/library/components/RecentAnalysis';
+import CustomLoader from '../../../components/CustomLoader';
 import useGreeting from '../hooks/useGreeting';
 import { useEffect, useState } from 'react';
 import { getRecentAnalyses } from '../../../../api/image';
@@ -84,9 +85,8 @@ export default function HomeScreen() {
         <Text className="font-semibold text-xl text-gray-800 mb-4">
           Recent Analysis
         </Text>
-
         {loadingRecent ? (
-          <ActivityIndicator />
+          <CustomLoader size="large" message="Loading recent analysis..." />
         ) : hasRecent ? (
           <RecentAnalysis items={recent} />
         ) : (
@@ -99,5 +99,6 @@ export default function HomeScreen() {
         )}
       </View>
     </ScrollView>
-  )
+  );
+  
 }

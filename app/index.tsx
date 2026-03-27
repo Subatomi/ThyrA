@@ -1,8 +1,9 @@
-import { Text, View, ActivityIndicator } from 'react-native';
+import { Text, View } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical';
+import CustomLoader from '../src/components/CustomLoader';
 import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
 
 export default function Index() {
@@ -44,7 +45,7 @@ export default function Index() {
     <View className="flex-1 items-center justify-center bg-white">
       <LogoTitleVertical />
       <Text className="mt-2 mb-8 text-gray-600">Thyroid Adequacy testing app</Text>
-      <ActivityIndicator size="large" />
+      <CustomLoader size="large" message="Initializing..." />
     </View>
   );
 }

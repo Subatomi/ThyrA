@@ -510,17 +510,20 @@ export default function AnalysisScreen() {
 
   const [folders, setFolders] = useState<FolderType[]>([])
   const [foldersLoading, setFoldersLoading] = useState(false)
+  const [savingImage, setSavingImage] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   const handleSaveImage = async () => {
     try {
-      setLoading(true)
+      setFoldersLoading(true)
       const response = await getFolders()
       setFolders(response)
       setShowFolderPopup(true)
     } catch (err) {
       show('danger', 'Error', 'Failed to load folders')
     } finally {
-      setLoading(false)
+      setFoldersLoading(false)
     }
   }
 
@@ -541,7 +544,7 @@ export default function AnalysisScreen() {
       return
     }
     try {
-      setLoading(true)
+      setSavingImage(true)
       setShowFileNamePopup(false)
       
       // Ensure we have the image size before uploading
@@ -590,7 +593,7 @@ export default function AnalysisScreen() {
         show('danger', 'Error', message)
       }
     } finally {
-      setLoading(false)
+      setSavingImage(false)
     }
   }
 
@@ -613,19 +616,30 @@ export default function AnalysisScreen() {
   }, [image]);
 
   const handleDownload = async () => {
-    if (!detectionRef.current || !isLayoutReady) return
+    if (!detectionRef.current || !isLayoutReady) {
+      show('warning', 'Not Ready', 'Please wait for detection to complete.')
+      return;
+    }
     try {
+      setDownloading(true);
+      
       const { status } = await MediaLibrary.requestPermissionsAsync(true);
       if (status !== 'granted') {
         show('warning', 'Permission Denied', 'Cannot save image without permission.')
         return;
       }
-      const uri = await captureRef(detectionRef, { format: 'png', quality: 1 });
-      const asset = await MediaLibrary.createAssetAsync(uri);
+
+      
+      // Permission is granted, save directly
+      const imageUri = await captureRef(detectionRef, { format: 'png', quality: 1 });
+      const asset = await MediaLibrary.createAssetAsync(imageUri);
       await MediaLibrary.createAlbumAsync('DetectionResults', asset, false);
       show('success', 'Saved', 'Image saved to your gallery!')
     } catch (err: any) {
+      console.error('Download error:', err);
       show('danger', 'Error', err.message || 'Failed to save image.')
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -654,7 +668,7 @@ export default function AnalysisScreen() {
       return;
     }
     try {
-      setLoading(true);
+      setAnalyzing(true);
       setResult(null);
       setAnalyzedImageUri(null);
 
@@ -663,14 +677,10 @@ export default function AnalysisScreen() {
 
       setResult(response);
       setAnalyzedImageUri(imageUri);
-      // setImageSize({ 
-      //     width: response.detections.image_width,
-      //     height: response.detections.image_height
-      // })
     } catch (error: any) {
       show('danger', 'Inference Failed', error.message || 'Something went wrong')
     } finally {
-      setLoading(false);
+      setAnalyzing(false);
     }
   };
 
@@ -714,12 +724,12 @@ export default function AnalysisScreen() {
       </View>
 
       {/* ANALYZE BUTTON */}
-      <Pressable className="w-full mb-6 mt-2" onPress={handleAnalyze} disabled={loading}>
+      <Pressable className="w-full mb-6 mt-2" onPress={handleAnalyze} disabled={analyzing}>
         <View
           style={{ elevation: 3 }}
-          className={`py-4 rounded-lg items-center justify-center ${loading ? "bg-gray-400" : "bg-red-500"}`}
+          className={`py-4 rounded-lg items-center justify-center ${analyzing ? "bg-gray-400" : "bg-red-500"}`}
         >
-          {loading ? (
+          {analyzing ? (
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white font-bold text-xl">Analyze</Text>
@@ -777,8 +787,33 @@ export default function AnalysisScreen() {
               </View>
             </View>
 
-            <Button title={loading ? "..." : "Download Result"} onPress={handleDownload} disabled={loading} />
-            <Button title={loading ? "..." : "Save Image"} onPress={handleSaveImage} disabled={loading} />
+            <View className="flex-col gap-2">
+              <Pressable className="flex-1" onPress={handleDownload} disabled={downloading}>
+                <View
+                  style={{ elevation: 3 }}
+                  className={`py-3 rounded-sm items-center justify-center ${downloading ? "bg-gray-400" : "bg-blue-500"}`}
+                >
+                  {downloading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white font-bold">Download Result</Text>
+                  )}
+                </View>
+              </Pressable>
+
+              <Pressable className="flex-1 mb-6" onPress={handleSaveImage} disabled={savingImage}>
+                <View
+                  style={{ elevation: 3 }}
+                  className={`py-3 rounded-sm items-center justify-center ${savingImage ? "bg-gray-400" : "bg-blue-500"}`}
+                >
+                  {savingImage ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white font-bold">Save Image</Text>
+                  )}
+                </View>
+              </Pressable>
+            </View>
           </>
         ) : (
           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
