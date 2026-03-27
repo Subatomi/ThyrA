@@ -207,10 +207,14 @@ import EditReportTitleModal from '../../library/components/EditReportTitleModal'
 import DeleteReportModal from '../../library/components/DeleteReportModal'
 import { useReportActions } from '../../analysis/hooks/userReportActions'
 import { useToast } from '../../../contexts/ToastContext'
-import { ResumableZoom } from 'react-native-zoom-toolkit'  // ← added
+import { ResumableZoom } from 'react-native-zoom-toolkit'
 
-const screenWidth = Dimensions.get('window').width
+const screenWidth = Dimensions.get('window').width;
+const CAPTURE_PADDING = 5;
+// screen - scroll padding (20×2) - card padding (16×2) = screenWidth - 72
 const detectionWidth = screenWidth - 72;
+// shrink further to fit inside the capture wrapper's padding
+const captureImageWidth = detectionWidth - CAPTURE_PADDING * 2;
 
 export default function ReportScreen() {
   const { image, reportId, reportName, reportDecode, originalWidth, originalHeight } = useLocalSearchParams<{
@@ -234,28 +238,21 @@ export default function ReportScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [isLayoutReady, setIsLayoutReady] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
-  const detectionRef = useRef<View>(null)
+  const captureRef2 = useRef<View>(null);   // ← capture target
+  const detectionRef = useRef<View>(null)   // ← layout-ready signal only
 
   useEffect(() => {
     if (reportDecode) {
       const parsed = JSON.parse(reportDecode)
       setResult(parsed)
-      // Extract dimensions from the parsed object (from backend)
-      console.log('Full parsed reportDecode:', JSON.stringify(parsed, null, 2))
-      console.log('Dimensions from database:', { 
-        original_width: parsed.original_width, 
-        original_height: parsed.original_height 
-      })
     }
   }, [reportDecode])
 
   useEffect(() => {
     if (!imageUri) return
-    Image.getSize(imageUri, (width, height) => {
-      console.log('Image.getSize result:', { width, height })
-      setImageSize({ width, height })
-    })
+    Image.getSize(imageUri, (width, height) => setImageSize({ width, height }))
   }, [imageUri])
 
   useEffect(() => {
@@ -266,23 +263,30 @@ export default function ReportScreen() {
   }, [currentReportId])
 
   const handleDownload = async () => {
-    if (!detectionRef.current || !isLayoutReady) return
+    if (!captureRef2.current || !isLayoutReady) {
+      show('warning', 'Not Ready', 'Please wait for the detection to render.')
+      return
+    }
     try {
+      setDownloading(true)
       const { status } = await MediaLibrary.requestPermissionsAsync(true)
       if (status !== 'granted') {
         show('warning', 'Permission Denied', 'Cannot save image without permission.')
         return
       }
-      const uri = await captureRef(detectionRef, { format: 'png', quality: 1 })
+      const uri = await captureRef(captureRef2, { format: 'png', quality: 1 })
       const asset = await MediaLibrary.createAssetAsync(uri)
       await MediaLibrary.createAlbumAsync('DetectionResults', asset, false)
       show('success', 'Saved', 'Image saved to your gallery!')
     } catch (err: any) {
       show('danger', 'Error', err.message || 'Failed to save image.')
+    } finally {
+      setDownloading(false)
     }
   }
 
   const hasResult = result?.detection_result?.thyrocytes && imageSize && imageUri
+
   return (
     <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
       <View className='w-full flex-row items-center mb-4 gap-4'>
@@ -298,35 +302,45 @@ export default function ReportScreen() {
         {hasResult ? (
           <>
             <View className='bg-white rounded-md p-4 overflow-hidden' style={{ elevation: 1 }}>
-              {/* ResumableZoom wraps only the detection view, not the whole card */}
               <View style={{ overflow: 'hidden' }}>
                 <ResumableZoom maxScale={8} minScale={1}>
+                  {/* Outer view — just for zoom gesture bounds */}
                   <View
                     ref={detectionRef}
                     collapsable={false}
                     style={{
-                      width: detectionWidth, // screen width - scroll padding (20×2) - card padding (16×2)
+                      width: detectionWidth,
                       aspectRatio: imageSize!.width / imageSize!.height,
                       marginVertical: 10,
                     }}
                     onLayout={() => setIsLayoutReady(true)}
                   >
-                    
-                    <DetectionOverlay
-                      imageUri={imageUri!}
-                      thyrocytes={result.detection_result.thyrocytes}
-                      clusters={result.detection_result.clusters}
-                      originalWidth={originalWidth ? parseInt(originalWidth) : (result?.original_width || imageSize!.width)}
-                      originalHeight={originalHeight ? parseInt(originalHeight) : (result?.original_height || imageSize!.height)}
-                      displayWidth={detectionWidth}
-                    />
+                    {/* Capture wrapper — adds padding without clipping content */}
+                    <View
+                      ref={captureRef2}
+                      collapsable={false}
+                      style={{
+                        flex: 1,
+                        padding: CAPTURE_PADDING,
+                        backgroundColor: 'white',
+                      }}
+                    >
+                      <DetectionOverlay
+                        imageUri={imageUri!}
+                        thyrocytes={result.detection_result.thyrocytes}
+                        clusters={result.detection_result.clusters}
+                        originalWidth={originalWidth ? parseInt(originalWidth) : (result?.original_width || imageSize!.width)}
+                        originalHeight={originalHeight ? parseInt(originalHeight) : (result?.original_height || imageSize!.height)}
+                        displayWidth={captureImageWidth}   // ← reduced width
+                      />
+                    </View>
                   </View>
                 </ResumableZoom>
               </View>
             </View>
 
+            {/* Legend + Download */}
             <View className='bg-white rounded-md p-4 gap-4' style={{ elevation: 1 }}>
-              {/* NEW legend — paste this in its place */}
               <View className="flex-row justify-start items-center gap-4 flex-wrap">
                 <View className="flex-row items-center gap-2">
                   <View className="w-4 h-4 bg-green-500 rounded-sm" />
@@ -336,25 +350,32 @@ export default function ReportScreen() {
                   <View className="w-4 h-4 bg-blue-500 rounded-sm" />
                   <Text className="text-gray-800 text-sm">Inadequate</Text>
                 </View>
-                {/* NEW */}
                 <View className="flex-row items-center gap-2">
                   <View className="w-4 h-4 bg-red-500 rounded-sm" />
                   <Text className="text-gray-800 text-sm">Isolated</Text>
                 </View>
               </View>
-              <Pressable onPress={handleDownload}>
+
+              <Pressable onPress={handleDownload} disabled={downloading}>
                 {({ pressed }) => (
                   <View
                     className="py-3 rounded-md items-center flex-row justify-center gap-2"
-                    style={{ backgroundColor: pressed ? '#15803d' : '#16a34a' }}
+                    style={{ backgroundColor: downloading ? '#9ca3af' : pressed ? '#15803d' : '#16a34a' }}
                   >
-                    <Download size={16} color="white" />
-                    <Text className="text-white font-bold">Download Result</Text>
+                    {downloading ? (
+                      <ActivityIndicator color="white" size="small" />
+                    ) : (
+                      <>
+                        <Download size={16} color="white" />
+                        <Text className="text-white font-bold">Download Result</Text>
+                      </>
+                    )}
                   </View>
                 )}
               </Pressable>
             </View>
 
+            {/* Edit controls */}
             <View className="bg-white rounded-md p-4 gap-3" style={{ elevation: 1 }}>
               <Text className="text-black font-bold">Edit</Text>
               <View className='flex-row justify-end gap-3'>
