@@ -94,17 +94,17 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
                 <Text className="text-base">File Management</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 className="flex-row items-center py-3 gap-4"
                 onPress={() => {
                   onClose()
                   setTimeout(() => router.push({
-        pathname: '/report-folder',
-        params: {
-          folderId: "18",          
-          folderName: "LALA" 
-        }
-      }), 200)
+                    pathname: '/report-folder',
+                    params: {
+                      folderId: "18",          
+                      folderName: "LALA" 
+                    }
+                  }), 200)
                 }}
               >
                 <Files size={20} color="#333" className="mr-3" />
@@ -121,7 +121,7 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
               >
                 <Files size={20} color="#333" className="mr-3" />
                 <Text className="text-base">Result (Temporary)</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
 
               <View className="h-3" />
@@ -135,6 +135,7 @@ export default function LeftMenu({ isOpen, onClose }: { isOpen: boolean; onClose
                 <CircleUser size={20} color="#333" className="mr-3" />
                 <Text className="text-base">Profile</Text>
               </TouchableOpacity>    
+
               <TouchableOpacity className="flex-row items-center py-3 gap-4" onPress={() => {
                   onClose()
                   setTimeout(() => router.push('/setting'), 200)

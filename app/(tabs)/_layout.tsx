@@ -24,10 +24,12 @@ export default function TabLayout() {
               backgroundColor: '#E31837',
               borderTopWidth: 0,
               paddingTop: 12,
+              paddingBottom: 12,
               paddingHorizontal: '18%',
               flexDirection: 'row',
               justifyContent: 'center',
               elevation: 1,
+              height: 55,
             },
           }}
           backBehavior="history"

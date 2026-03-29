@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { router } from 'expo-router'
-const BASE_URL = "http://192.168.1.25:8000";  //your ip4 address. Place on env later
+const BASE_URL = "https://arrestive-unretroactively-charlyn.ngrok-free.dev" //your ip4 address. Place on env later
 
 // export async function apiRequest(endpoint, options = {}) {
 //   // Get token from AsyncStorage (or SecureStore)
@@ -43,7 +43,7 @@ const BASE_URL = "http://192.168.1.25:8000";  //your ip4 address. Place on env l
 
 export async function apiRequest(endpoint, options = {}) {
   const token = await AsyncStorage.getItem("access_token");
-  console.log(token)
+  // console.log(token)
   const headers = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.body instanceof FormData

@@ -81,12 +81,14 @@ export default function HomeScreen() {
         />
       </View>
 
-      <View className="w-full mt-6">
+      <View className="w-full flex-1 mt-6">
         <Text className="font-semibold text-xl text-gray-800 mb-4">
           Recent Analysis
         </Text>
         {loadingRecent ? (
-          <CustomLoader size="large" message="Loading recent analysis..." />
+          <View style={{ minHeight: 200 }} className="justify-center items-center w-full">
+            <CustomLoader size="large" message="Loading recent analysis..." />
+          </View>
         ) : hasRecent ? (
           <RecentAnalysis items={recent} />
         ) : (

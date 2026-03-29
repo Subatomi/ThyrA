@@ -1,15 +1,15 @@
 {
   "expo": {
     "scheme": "ThyrA",
-    "name": "Expo",
-    "slug": "Expo",
+    "name": "ThyrA",
+    "slug": "thyra-test-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icons/logo-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icons/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,21 +18,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icons/logo-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES",
-        "RECORD_AUDIO",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
         "android.permission.ACCESS_MEDIA_LOCATION",
-        "android.permission.READ_MEDIA_IMAGES"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ],
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.Expo"
     },
@@ -57,7 +54,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "fc7d1aa6-7f4f-47ea-9175-6fd36e826cf9"
+        "projectId": "f18e3388-740c-45bf-a9f7-0e34d6848ccd"
       }
     }
   }

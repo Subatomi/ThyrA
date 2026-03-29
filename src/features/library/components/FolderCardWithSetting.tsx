@@ -55,31 +55,29 @@ const FolderCard = ({ id, title, onPress, onMenuPress }: FolderCardProps) => {
         className="bg-white rounded-lg p-4 w-full h-fit shadow-lg shadow-gray-200"
       >
         {/* Menu Button */}
-        {title !== "default" && (
-          <View className="absolute top-4 right-2 z-10">
-            <Pressable
-              onPress={() => {
-                if (onMenuPress) {
-                  onMenuPress();
-                  return;
-                }
-                openActionBar({
-                  onEdit: () => openEditModal({ id, name: title, description: '' }),
-                  onDelete: () => openDeleteModal(title, id.toString()),
-                });
-              }}
-              onLongPress={() =>
-                openActionBar({
-                  onEdit: () => openEditModal({ id, name: title, description: '' }),
-                  onDelete: () => openDeleteModal(title, id.toString()),
-                })
+        <View className="absolute top-4 right-2 z-10">
+          <Pressable
+            onPress={() => {
+              if (onMenuPress) {
+                onMenuPress();
+                return;
               }
-              className="p-2 active:opacity-50"
-            >
-              <MoreVerticalIcon size={24} color="#000" strokeWidth={3} />
-            </Pressable>
-          </View>
-        )}
+              openActionBar({
+                onEdit: () => openEditModal({ id, name: title, description: '' }),
+                onDelete: () => openDeleteModal(title, id.toString()),
+              });
+            }}
+            onLongPress={() =>
+              openActionBar({
+                onEdit: () => openEditModal({ id, name: title, description: '' }),
+                onDelete: () => openDeleteModal(title, id.toString()),
+              })
+            }
+            className="p-2 active:opacity-50"
+          >
+            <MoreVerticalIcon size={24} color="#000" strokeWidth={3} />
+          </Pressable>
+        </View>
 
         {/* Folder Icon */}
         <View className="items-center justify-center mt-4 ">

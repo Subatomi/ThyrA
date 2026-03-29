@@ -234,6 +234,7 @@ export default function ReportScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [isLayoutReady, setIsLayoutReady] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   const detectionRef = useRef<View>(null)
 
@@ -268,7 +269,7 @@ export default function ReportScreen() {
   const handleDownload = async () => {
     if (!detectionRef.current || !isLayoutReady) return
     try {
-      const { status } = await MediaLibrary.requestPermissionsAsync(true)
+      const { status } = await MediaLibrary.requestPermissionsAsync()
       if (status !== 'granted') {
         show('warning', 'Permission Denied', 'Cannot save image without permission.')
         return

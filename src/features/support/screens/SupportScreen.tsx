@@ -33,7 +33,7 @@ export default function SupportScreen() {
   };
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-slate-100 pt-6 pb-4 px-4 border-b border-transparent">
+    <SafeAreaView edges={["top"]} className="flex-1 bg-gray-100 pt-6 pb-4 px-4 border-b border-transparent">
       <View className="relative flex-row items-center mb-6">
         <BackButton />
         <View pointerEvents="none" className="absolute left-0 right-0 items-center">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Alert, Pressable, FlatList, ActivityIndicator } from 'react-native'
+import { View, Text, Alert, Pressable, FlatList } from 'react-native'
+import CustomLoader from '@/components/CustomLoader'
 import BackButton from '../../../components/BackButton'
 import AssessmentReportCardWithSetting from '../components/AssessmentReportCardWithSetting'
 import FloatingActionBar from '../components/FloatingActionBar'
@@ -66,11 +67,12 @@ export default function ReportFolderScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
   useEffect(() => {
+    setLoading(true)
     setReports([])
     async function fetchImages() {
       try {
         const data = await getImagesByFolder(Number(folderId))
-        console.log('API response first item:', data[0])
+        // console.log('API response first item:', data[0])
         const mappedReports: ReportItem[] = data.map((img: any) => ({
           id: String(img.id),
           image_name: img.image_name,
@@ -80,12 +82,13 @@ export default function ReportFolderScreen() {
           original_width: img.original_width,   
           original_height: img.original_height  
         }))
-        console.log('Mapped reports first item:', mappedReports[mappedReports.length - 1])
+        // console.log('Mapped reports first item:', mappedReports[mappedReports.length - 1])
         setReports(mappedReports)
       } catch (error) {
         console.error("Failed to fetch images", error)
       } finally {
-        setLoading(false)
+        // Minimum 500ms loading time to ensure user sees the loader
+        setTimeout(() => setLoading(false), 500)
       }
     }
     fetchImages()
@@ -211,7 +214,7 @@ export default function ReportFolderScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-100">
-        <ActivityIndicator size="large" color="#000" />
+        <CustomLoader size="large" message="Initializing..." />
       </View>
     )
   }
@@ -229,8 +232,12 @@ export default function ReportFolderScreen() {
           <View className="w-12" />
         </View>
 
-        <View className="flex-1 items-center">
-          {reports.length === 0 ? (  
+        <View className="flex-1">
+          {loading ? (
+            <View className="flex-1 items-center justify-center">
+              <CustomLoader size="large" message="Loading reports..." />
+            </View>
+          ) : reports.length === 0 ? (  
             <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
               <FileSearchCorner size={48} color="#9CA3AF" />
               <Text className="text-gray-400 mt-2 text-center">
@@ -243,7 +250,7 @@ export default function ReportFolderScreen() {
               keyExtractor={(item) => item.id}
               numColumns={2}
               contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-              columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
+              columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: -8 }}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
                 <View className="px-2 mb-4" style={{ width: 160 }}>

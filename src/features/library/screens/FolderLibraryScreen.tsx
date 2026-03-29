@@ -42,7 +42,7 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentPro
         <View className="w-12" />
       </View>
 
-      <View className='flex-1 items-center'>
+      <View className='flex-1'>
          {folders.length === 0 ? (
             <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
               <FolderSearch size={48} color="#9CA3AF" />
@@ -56,7 +56,7 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentPro
               keyExtractor={(item) => item.id}
               numColumns={2}
               contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-              columnWrapperStyle={{ justifyContent: 'flex-start', marginHorizontal: -8 }}
+              columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: -8 }}
               renderItem={({ item }) => (
                 <View className="px-2 mb-4" style={{ width: 160 }}>
                   <FolderCard id={item.id} title={item.title} />
