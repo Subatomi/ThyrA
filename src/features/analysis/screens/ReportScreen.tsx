@@ -210,7 +210,7 @@ import { useToast } from '../../../contexts/ToastContext'
 import { ResumableZoom } from 'react-native-zoom-toolkit'
 
 const screenWidth = Dimensions.get('window').width;
-const CAPTURE_PADDING = 5;
+const CAPTURE_PADDING = 10;
 // screen - scroll padding (20×2) - card padding (16×2) = screenWidth - 72
 const detectionWidth = screenWidth - 72;
 // shrink further to fit inside the capture wrapper's padding
@@ -244,9 +244,23 @@ export default function ReportScreen() {
   const detectionRef = useRef<View>(null)   // ← layout-ready signal only
 
   useEffect(() => {
+  if (reportDecode) {
+    const parsed = JSON.parse(reportDecode)
+    console.log('total thyrocytes:', parsed.detection_result?.thyrocytes?.length)
+    console.log('first thyrocyte:', parsed.detection_result?.thyrocytes?.[0])
+    console.log('last thyrocyte:', parsed.detection_result?.thyrocytes?.slice(-1)[0])
+  }
+}, [reportDecode])
+
+  useEffect(() => {
     if (reportDecode) {
       const parsed = JSON.parse(reportDecode)
-      setResult(parsed)
+      
+      console.log('total thyrocytes:', parsed.thyrocytes?.length)
+      console.log('first thyrocyte:', parsed.thyrocytes?.[0])
+      console.log('last thyrocyte:', parsed.thyrocytes?.slice(-1)[0])
+      setResult({ detection_result: parsed })
+      //setResult(parsed)
     }
   }, [reportDecode])
 
