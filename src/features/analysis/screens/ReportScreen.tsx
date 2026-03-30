@@ -315,7 +315,7 @@ export default function ReportScreen() {
 
         {hasResult ? (
           <>
-            <View className='bg-white rounded-md p-4 overflow-hidden' style={{ elevation: 1 }}>
+            <View className='bg-white rounded-md overflow-hidden' style={{ elevation: 1 }}>
               <View style={{ overflow: 'hidden' }}>
                 <ResumableZoom maxScale={8} minScale={1}>
                   {/* Outer view — just for zoom gesture bounds */}
