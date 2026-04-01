@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
+import CustomLoader from '@/components/CustomLoader';
 import usePressableAnimation from '../../../hooks/usePressableAnimation';
 
 interface ReportCardProps {
@@ -12,6 +13,11 @@ interface ReportCardProps {
 
 const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardProps) => {
   const { animatedStyle, onPressIn, onPressOut } = usePressableAnimation();
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  
+  // Create a unique cache-busting key for newly added images
+  const imageKey = imageSource?.uri ? `${imageSource.uri}-${Date.now()}` : 'default';
 
   return (
     <Pressable 
@@ -21,11 +27,22 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardPr
     >
       <Animated.View style={[{ elevation: 1 }, animatedStyle]} className="bg-white rounded-md p-4 w-40 mb-4">
           {/* Slide Preview Image */}
-          <View className="aspect-square w-full overflow-hidden mb-3 ">
+          <View className="aspect-square w-full overflow-hidden mb-3 relative items-center justify-center">
+            {imageLoading && !imageError && (
+              <CustomLoader size="small" />
+            )}
             <Image 
-              source={imageSource ? imageSource : require('assets/img/topographic_background.jpg')} 
+              key={imageKey}
+              source={imageError || !imageSource ? require('assets/img/topographic_background.jpg') : imageSource}
               className="w-full h-full"
               resizeMode="cover"
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+              onError={() => {
+                setImageError(true);
+                setImageLoading(false);
+              }}
+              cache="reload"
             />
           </View>
 

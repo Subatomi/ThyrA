@@ -10,12 +10,10 @@ type Props = {
 
 export default function CreateFolderModal({ visible, onClose, onCreate }: Props) {
   const [name, setName] = useState('');
-  {/*const [description, setDescription] = useState('');*/}
 
   useEffect(() => {
     if (!visible) {
       setName('');
-      // setDescription('');
     }
   }, [visible]);
 

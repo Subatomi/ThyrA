@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ActivityIndicator} from 'react-native';
 import { Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import OtpBoxes from '@/components/OtpBoxes';
 import { startEmailChange, verifyEmailChange } from 'api/auth';
@@ -17,6 +18,7 @@ type Props = {
 
 export default function EditEmailModal({ visible, initialValue, onClose, onSendVerification }: Props) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState(initialValue);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -79,10 +81,9 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
-        <View className="bg-white rounded-t-xl p-4 border-t border-gray-200">
-
+        <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
           {verificationSent ? (
-            <View>
+            <>
               <Text className="text-lg font-semibold mb-1">OTP verification sent</Text>
               <Text className="">Enter the 6-digit code sent to {email}</Text>
               {!!error && (
@@ -90,21 +91,19 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
               )}
               <OtpBoxes length={6} boxSize={boxSize} onComplete={setCode} />
               <View className='flex-row justify-end'>
-                
                 <Pressable className="py-2 px-4" onPress={() => { onClose()}}><Text className="text-center">Cancel</Text></Pressable>
                 <Pressable className="bg-green-600 py-2 px-4 rounded-md disabled:opacity-60" onPress={handleVerify} disabled={saving || code.length !== 6}>
                   <Text className="text-white text-center">{saving ? 'Verifying...' : 'Confirm'}</Text>
                 </Pressable>
               </View>
-            </View>
+            </>
           ) : (
             <>
               <Text className="text-lg font-semibold mb-3">Change Email</Text>
               <TextInput onChangeText={setEmail} keyboardType="email-address" placeholder="Enter new email"  className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
               <TextInput value={password} onChangeText={setPassword} secureTextEntry placeholder="Current password" className="border border-gray-200 rounded-md px-3 py-2 mb-2" />
               {error ? <Text className="text-red-600 mb-2">{error}</Text> : null}
-
-                <Pressable className="bg-green-600 py-2 px-4 rounded-md mb-2 disabled:opacity-60" onPress={handleSend} disabled={saving}>
+              <Pressable className="bg-green-600 py-2 px-4 rounded-md mb-2 disabled:opacity-60" onPress={handleSend} disabled={saving}>
                 {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white text-center">Send verification</Text>}
               </Pressable>
               <Pressable className="py-2 px-4" onPress={() => { onClose()}}><Text className="text-center">Cancel</Text></Pressable>

@@ -11,7 +11,7 @@ export default function TabLayout() {
 
   return (
     <ToastProvider>
-      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, paddingTop: insets.top}}>
         <CustomHeader />
 
         <Tabs
@@ -24,12 +24,12 @@ export default function TabLayout() {
               backgroundColor: '#E31837',
               borderTopWidth: 0,
               paddingTop: 12,
-              paddingBottom: 12,
+              paddingBottom: 12 + insets.bottom,
               paddingHorizontal: '18%',
               flexDirection: 'row',
               justifyContent: 'center',
               elevation: 1,
-              height: 55,
+              height: 55 + insets.bottom,
             },
           }}
           backBehavior="history"

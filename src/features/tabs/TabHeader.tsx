@@ -9,7 +9,7 @@ export const CustomHeader: React.FC = () => {
   const insets = useSafeAreaInsets()
   const { openMenu } = useMenu()
   return (
-    <View className="bg-white border-b border-gray-100" style={{ paddingTop: insets.top }}>
+    <View className="bg-white border-b border-gray-100">
       <View className="flex-row items-center justify-between px-5 h-[60px]">
         <View className="flex-row items-center">
           <LogoTitle />

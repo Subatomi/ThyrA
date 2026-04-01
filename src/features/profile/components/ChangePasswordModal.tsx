@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { changePassword } from 'api/auth';
 type Result = { success: boolean; error?: string };
 
@@ -10,6 +11,7 @@ type Props = {
 
 
 export default function ChangePasswordModal({ visible, onClose }: Props) {
+  const insets = useSafeAreaInsets();
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -49,7 +51,7 @@ export default function ChangePasswordModal({ visible, onClose }: Props) {
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
-        <View className="bg-white rounded-t-xl p-4 border-t border-gray-200">
+        <View style={{ paddingBottom: insets.bottom  }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
           <Text className="text-lg font-semibold mb-3">Change password</Text>
 
           {success ? (

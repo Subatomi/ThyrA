@@ -196,6 +196,7 @@
 import { View, Text, Pressable, ActivityIndicator, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
+import CustomLoader from '@/components/CustomLoader';
 import { useLocalSearchParams } from 'expo-router'
 import { useState, useEffect, useRef } from 'react';
 import DetectionOverlay from '@/components/DetectionOverlay';
@@ -208,6 +209,7 @@ import DeleteReportModal from '../../library/components/DeleteReportModal'
 import { useReportActions } from '../../analysis/hooks/userReportActions'
 import { useToast } from '../../../contexts/ToastContext'
 import { ResumableZoom } from 'react-native-zoom-toolkit'
+import PermissionAlertModal from '../components/PermissionAlertModal'
 
 const screenWidth = Dimensions.get('window').width;
 const CAPTURE_PADDING = 10;
@@ -239,6 +241,8 @@ export default function ReportScreen() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [isLayoutReady, setIsLayoutReady] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [showPermissionAlert, setShowPermissionAlert] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
 
   const captureRef2 = useRef<View>(null);   // ← capture target
   const detectionRef = useRef<View>(null)   // ← layout-ready signal only
@@ -266,7 +270,10 @@ export default function ReportScreen() {
 
   useEffect(() => {
     if (!imageUri) return
-    Image.getSize(imageUri, (width, height) => setImageSize({ width, height }))
+    Image.getSize(imageUri, (width, height) => {
+      setImageSize({ width, height })
+      setImageLoading(false)
+    })
   }, [imageUri])
 
   useEffect(() => {
@@ -283,16 +290,30 @@ export default function ReportScreen() {
     }
     try {
       setDownloading(true)
-      const { status } = await MediaLibrary.requestPermissionsAsync(true)
-      if (status !== 'granted') {
-        show('warning', 'Permission Denied', 'Cannot save image without permission.')
-        return
+      const permissionResult = await MediaLibrary.requestPermissionsAsync(true)
+      
+      if (permissionResult.status !== 'granted') {
+        if (permissionResult.canAskAgain) {
+          const retryResult = await MediaLibrary.requestPermissionsAsync(true)
+          if (retryResult.status !== 'granted') {
+            setShowPermissionAlert(true)
+            return
+          }
+        } else {
+          setShowPermissionAlert(true)
+          return
+        }
       }
+
       const uri = await captureRef(captureRef2, { format: 'png', quality: 1 })
       const asset = await MediaLibrary.createAssetAsync(uri)
       await MediaLibrary.createAlbumAsync('DetectionResults', asset, false)
       show('success', 'Saved', 'Image saved to your gallery!')
     } catch (err: any) {
+      if (err.message?.includes('User didn\'t grant write permission') || 
+        err.message?.includes('rejected')) {
+        return
+      }
       show('danger', 'Error', err.message || 'Failed to save image.')
     } finally {
       setDownloading(false)
@@ -313,7 +334,11 @@ export default function ReportScreen() {
       <View className="w-full mt-6 gap-4">
         <Text className="font-semibold text-xl text-gray-800">Detection Result</Text>
 
-        {hasResult ? (
+        {imageLoading ? (
+          <View className="bg-white rounded-md p-4 items-center justify-center min-h-64">
+            <CustomLoader size="large" message="Loading report..." />
+          </View>
+        ) : hasResult ? (
           <>
             <View className='bg-white rounded-md overflow-hidden' style={{ elevation: 1 }}>
               <View style={{ overflow: 'hidden' }}>
@@ -418,7 +443,7 @@ export default function ReportScreen() {
               </View>
             </View>
           </>
-        ) : (
+        ) : imageLoading ? null : (
           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
             <ScanSearch size={48} color="#9CA3AF" />
             <Text className="text-gray-400 mt-2 text-center">
@@ -449,6 +474,8 @@ export default function ReportScreen() {
           setDeleteModalVisible(false)
         }}
       />
+
+      <PermissionAlertModal visible={showPermissionAlert} onClose={() => setShowPermissionAlert(false)} />
     </ScrollView>
   )
 }

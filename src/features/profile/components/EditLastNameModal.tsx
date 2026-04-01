@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { updateProfile } from 'api/auth';
 import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
 
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export default function EditLastNameModal({ visible, initialValue, onClose, onSave }: Props) {
+  const insets = useSafeAreaInsets();
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
 
@@ -39,7 +41,7 @@ export default function EditLastNameModal({ visible, initialValue, onClose, onSa
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
-        <View className="bg-white rounded-t-xl p-4 border-t border-gray-200">
+        <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
           <Text className="text-lg font-semibold mb-3">Last name</Text>
           <TextInput value={value} onChangeText={setValue} className="border border-gray-200 rounded-md px-3 py-2 mb-3" />
           <View className="flex-row justify-end">
