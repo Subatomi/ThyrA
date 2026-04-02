@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 import { login } from 'api/auth'
 import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile'
-import { Alert } from "react-native";
+import { useToast } from '../../../contexts/ToastContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const SignInScreen: React.FC = () => {
@@ -12,12 +12,13 @@ const SignInScreen: React.FC = () => {
 	const [password, setPassword] = useState('')
 	const [loading, setLoading] = useState(false);
 	const router = useRouter()
+	const { show } = useToast()
 
 
 	//Handle log in function
 	const handleLogin = async () => {
 		if (!email || !password) {
-			Alert.alert("Missing fields", "Please fill in all fields.");
+			show('warning', 'Missing fields', 'Please fill in all fields.');
 			return;
 		}
 		try {
@@ -39,7 +40,7 @@ const SignInScreen: React.FC = () => {
 			router.replace("/home");
 		} catch (error: any) {
 			console.log(error)
-			Alert.alert("Log In failed", error.message);
+			show('danger', 'Log In failed', error.message);
 		} finally {
 			setLoading(false);
 		}

@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { Modal, View, Text, Pressable, TextInput, Alert } from 'react-native'
+import { Modal, View, Text, Pressable, TextInput } from 'react-native'
 import { deleteAccount } from 'api/auth'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter, useNavigation } from 'expo-router'
 import { CommonActions } from '@react-navigation/native'
+import { useToast } from '../../../contexts/ToastContext'
 
 type Props = {
   visible: boolean
@@ -13,6 +14,7 @@ type Props = {
 export default function DeleteAccountModal({ visible, onClose }: Props) {
   const router = useRouter()
   const navigation = useNavigation()
+  const { show } = useToast()
   const [password, setPassword] = useState('')
   const [confirmPhrase, setConfirmPhrase] = useState('')
   const REQUIRED_PHRASE = 'DELETE ACCOUNT'
@@ -23,7 +25,7 @@ export default function DeleteAccountModal({ visible, onClose }: Props) {
     setLoading(true)
     try {
       await deleteAccount({ password })
-      Alert.alert('Account deleted', 'Your account deletion request was processed.')
+      show('success', 'Account deleted', 'Your account deletion request was processed.')
       setPassword('')
       setConfirmPhrase('')
       onClose()
@@ -47,7 +49,7 @@ export default function DeleteAccountModal({ visible, onClose }: Props) {
         })
       )
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Deletion failed')
+      show('danger', 'Error', e?.message || 'Deletion failed')
     } finally {
       setLoading(false)
     }

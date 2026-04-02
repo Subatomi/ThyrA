@@ -3,6 +3,7 @@ import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { updateProfile } from 'api/auth';
 import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
+import { useToast } from '../../../contexts/ToastContext';
 
 type Props = {
   visible: boolean;
@@ -13,6 +14,7 @@ type Props = {
 
 export default function EditLastNameModal({ visible, initialValue, onClose, onSave }: Props) {
   const insets = useSafeAreaInsets();
+  const { show } = useToast();
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
 
@@ -32,7 +34,11 @@ export default function EditLastNameModal({ visible, initialValue, onClose, onSa
       await refreshProfileFromServer();
       if (__DEV__) console.log('[EditLastNameModal] update complete, cache refreshed');
       await Promise.resolve(onSave(last));
+      show('success', 'Name updated', 'Your last name has been updated successfully.');
       onClose();
+    } catch (e) {
+      console.error(e);
+      show('danger', 'Update failed', 'Unable to update your name. Please try again.');
     } finally {
       setSaving(false);
     }

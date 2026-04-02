@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Linking } from 'react-native';
 import BackButton from '@/components/BackButton';
 import FAQItem from '@/features/support/components/FAQItem';
+import { useToast } from '../../../contexts/ToastContext';
 
 // Default fallback values
 const DEFAULT_SUPPORT_EMAIL = 'ladera.portfolio@gmail.com';
@@ -19,6 +20,7 @@ const FAQ_ITEMS = [
 ];
 
 export default function SupportScreen() {
+  const { show } = useToast();
   const [selectedFaq, setSelectedFaq] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -30,12 +32,12 @@ export default function SupportScreen() {
     try {
       const canOpen = await Linking.canOpenURL(url);
       if (!canOpen) {
-        Alert.alert('Email app not available', 'Please configure an email application on your device.');
+        show('warning', 'Email app not available', 'Please configure an email application on your device.');
         return;
       }
       await Linking.openURL(url);
     } catch (e) {
-      Alert.alert('Could not open email', 'Please try again or contact support directly at ' + SUPPORT_EMAIL);
+      show('danger', 'Could not open email', 'Please try again or contact support directly at ' + SUPPORT_EMAIL);
     }
   };
 

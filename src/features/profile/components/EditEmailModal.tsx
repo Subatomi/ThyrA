@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import OtpBoxes from '@/components/OtpBoxes';
 import { startEmailChange, verifyEmailChange } from 'api/auth';
 import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
+import { useToast } from '../../../contexts/ToastContext';
 
 type SendResult = { success: boolean; error?: string };
 
@@ -19,6 +20,7 @@ type Props = {
 export default function EditEmailModal({ visible, initialValue, onClose, onSendVerification }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { show } = useToast();
   const [email, setEmail] = useState(initialValue);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -52,7 +54,9 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
       await startEmailChange({ new_email: newEmail, password });
       setVerificationSent(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not send verification');
+      console.error(e);
+      setError('Could not send verification. Please try again.');
+      show('danger', 'Verification failed', 'Could not send verification email.');
     } finally {
       setSaving(false);
     }
@@ -69,9 +73,12 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
       }
       await verifyEmailChange({ new_email: newEmail, code });
       await refreshProfileFromServer();
+      show('success', 'Email updated', 'Your email has been updated successfully.');
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Verification failed');
+      console.error(e);
+      setError('Verification failed. Please check your code and try again.');
+      show('danger', 'Verification failed', 'Code verification failed.');
     } finally {
       setSaving(false);
     }

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import { useToast } from '../contexts/ToastContext';
 
 export function useImagePicker() {
+  const { show } = useToast();
   const [imageUri, setImageUri] = useState<string | null>(null);
 
   async function requestLibraryPermission() {
@@ -17,7 +19,7 @@ export function useImagePicker() {
   async function pickImage() {
     const granted = await requestLibraryPermission();
     if (!granted) {
-      alert('Permission to access photos is required.');
+      show('warning', 'Permission denied', 'Permission to access photos is required.');
       return null;
     }
 
@@ -38,7 +40,7 @@ export function useImagePicker() {
   async function takePhoto() {
     const granted = await requestCameraPermission();
     if (!granted) {
-      alert('Camera permission required.');
+      show('warning', 'Permission denied', 'Camera permission required.');
       return null;
     }
 
