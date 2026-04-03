@@ -38,7 +38,7 @@ const SignUpScreen: React.FC = () => {
 				password,
 			});
 
-			console.log("Signup success:", response);
+			// console.log("Signup success:", response);
 
 			//navigate after successful signup
 			router.replace("/sign-in");

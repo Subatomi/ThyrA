@@ -4,19 +4,17 @@ import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native'
 import BackButton from '@/components/BackButton'
 import { useRouter } from 'expo-router'
 
+const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL || 'support@example.com'
+
 export default function PrivacyPolicy() {
   const router = useRouter()
 
   const contactSupport = () => {
-    Linking.openURL('mailto:support@example.com')
+    Linking.openURL(`mailto:${SUPPORT_EMAIL}`)
   }
 
-//   const requestData = () => {
-//     Alert.alert('Request Data', 'We received your request and will contact you via email.')
-//   }
-
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-slate-100 pt-6 pb-4 px-4 border-b border-transparent">
+    <SafeAreaView edges={["top", "bottom"]} className="flex-1 bg-slate-100 pt-6 pb-4 px-4 border-b border-transparent">
       <View className="relative flex-row items-center mb-6">
         <BackButton />
         <View pointerEvents="none" className="absolute left-0 right-0 items-center">
@@ -61,7 +59,7 @@ export default function PrivacyPolicy() {
             <Pressable onPress={contactSupport} className="py-2">
               <Text className="text-sm text-blue-600">Contact Support</Text>
             </Pressable>
-            <Pressable onPress={() => router.push('/settings')} className="py-2">
+            <Pressable onPress={() => router.push('/setting')} className="py-2">
               <Text className="text-sm text-red-600">Delete account (go to Settings)</Text>
             </Pressable>
           </View>
@@ -69,7 +67,7 @@ export default function PrivacyPolicy() {
 
         <View className="mb-8">
           <Text className="text-xs text-gray-500">Effective date: 2026-01-31</Text>
-          <Text className="text-xs text-gray-500 mt-2">If you have questions about this policy, contact support@example.com</Text>
+          <Text className="text-xs text-gray-500 mt-2">If you have questions about this policy, contact {SUPPORT_EMAIL}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

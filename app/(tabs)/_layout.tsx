@@ -4,13 +4,11 @@ import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import CustomHeader from '../../src/features/tabs/TabHeader'
 import TabIconWrapper from '../../src/features/tabs/TabIconWrapper'
-import { ToastProvider } from '../../src/contexts/ToastContext';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets()
 
   return (
-    <ToastProvider>
       <View style={{ flex: 1, paddingTop: insets.top}}>
         <CustomHeader />
 
@@ -75,7 +73,5 @@ export default function TabLayout() {
           
         </Tabs>
       </View>
-      
-    </ToastProvider>
   )
 }

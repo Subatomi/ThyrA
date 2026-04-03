@@ -248,21 +248,8 @@ export default function ReportScreen() {
   const detectionRef = useRef<View>(null)   // ← layout-ready signal only
 
   useEffect(() => {
-  if (reportDecode) {
-    const parsed = JSON.parse(reportDecode)
-    console.log('total thyrocytes:', parsed.detection_result?.thyrocytes?.length)
-    console.log('first thyrocyte:', parsed.detection_result?.thyrocytes?.[0])
-    console.log('last thyrocyte:', parsed.detection_result?.thyrocytes?.slice(-1)[0])
-  }
-}, [reportDecode])
-
-  useEffect(() => {
     if (reportDecode) {
       const parsed = JSON.parse(reportDecode)
-      
-      console.log('total thyrocytes:', parsed.thyrocytes?.length)
-      console.log('first thyrocyte:', parsed.thyrocytes?.[0])
-      console.log('last thyrocyte:', parsed.thyrocytes?.slice(-1)[0])
       setResult({ detection_result: parsed })
       //setResult(parsed)
     }

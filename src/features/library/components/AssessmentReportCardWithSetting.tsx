@@ -34,9 +34,11 @@ const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, on
       </View>
 
       {/* Slide Preview Image */}
-      <View className="mb-2 items-center justify-center ">
+      <View className="mb-2 relative w-full h-28 overflow-hidden items-center justify-center">
         {imageLoading && !imageError && (
-          <CustomLoader size="small" />
+          <View className="absolute inset-0 items-center justify-center bg-white/70">
+            <CustomLoader size="small" />
+          </View>
         )}
         <Image 
           key={imageKey}
@@ -49,7 +51,7 @@ const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, on
             setImageError(true);
             setImageLoading(false);
           }}
-          cache="reload"
+          style={{ opacity: imageLoading ? 0 : 1 }}
         />
       </View>
 

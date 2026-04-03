@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { updateProfile } from 'api/auth';
 import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
@@ -17,10 +17,25 @@ export default function EditFirstNameModal({ visible, initialValue, onClose, onS
   const { show } = useToast();
   const [value, setValue] = useState(initialValue);
   const [saving, setSaving] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     setValue(initialValue);
   }, [initialValue, visible]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -46,18 +61,34 @@ export default function EditFirstNameModal({ visible, initialValue, onClose, onS
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
-        <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={-insets.bottom + 16}
+        enabled={keyboardVisible}
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+        className="justify-end"
+      >
+        <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4">
           <Text className="text-lg font-semibold mb-3">First name</Text>
-          <TextInput value={value} onChangeText={setValue} className="border border-gray-200 rounded-md px-3 py-2 mb-3" />
+          <TextInput 
+            value={value} 
+            onChangeText={setValue} 
+            className="border border-gray-200 rounded-md px-3 py-2 mb-3"
+          />
           <View className="flex-row justify-end">
-            <Pressable className="py-2 px-4" onPress={onClose}><Text>Cancel</Text></Pressable>
-            <Pressable className="bg-green-600 py-2 px-4 rounded-md mr-2" onPress={handleSave} disabled={saving}>
+            <Pressable className="py-2 px-4" onPress={onClose}>
+              <Text>Cancel</Text>
+            </Pressable>
+            <Pressable 
+              className="bg-green-600 py-2 px-4 rounded-md mr-2" 
+              onPress={handleSave} 
+              disabled={saving}
+            >
               {saving ? <ActivityIndicator color="#fff" /> : <Text className="text-white">Save</Text>}
             </Pressable>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

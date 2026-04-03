@@ -583,7 +583,7 @@ export default function AnalysisScreen() {
         emit('recentAnalyses', { action: 'add', item: createdItem })
       } else {
         emit(`folder:${selectedFolder.id}`)
-        emit('recentAnalyses')
+        emit('recentAnalyses', { action: 'refresh' })
       }
       show('success', 'Saved', 'Image saved successfully!')
       setSelectedFolder(null)

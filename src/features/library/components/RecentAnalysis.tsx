@@ -64,7 +64,7 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
   useEffect(() => {
     // Add new item after upload
     const addSub = DeviceEventEmitter.addListener('recentAnalyses', (payload: any) => {
-      if (!payload) {
+      if (!payload || payload.action === 'refresh') {
         (async () => {
           setLoading(true)
           try {

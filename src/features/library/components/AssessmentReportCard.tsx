@@ -29,12 +29,14 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardPr
           {/* Slide Preview Image */}
           <View className="aspect-square w-full overflow-hidden mb-3 relative items-center justify-center">
             {imageLoading && !imageError && (
-              <CustomLoader size="small" />
+              <View className="absolute inset-0 items-center justify-center bg-white/70">
+                <CustomLoader size="small" />
+              </View>
             )}
             <Image 
               key={imageKey}
               source={imageError || !imageSource ? require('assets/img/topographic_background.jpg') : imageSource}
-              className="w-full h-full"
+              className="w-full h-full absolute inset-0"
               resizeMode="cover"
               onLoadStart={() => setImageLoading(true)}
               onLoadEnd={() => setImageLoading(false)}
@@ -42,7 +44,7 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress}: ReportCardPr
                 setImageError(true);
                 setImageLoading(false);
               }}
-              cache="reload"
+              style={{ opacity: imageLoading ? 0 : 1 }}
             />
           </View>
 

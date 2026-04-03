@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ActivityIndicator} from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -27,6 +27,7 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
   const [verificationSent, setVerificationSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const screenWidth = Dimensions.get('window').width;
   const boxSize = (screenWidth - 80) / 6 - 8; 
@@ -37,6 +38,16 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
     setError(null);
     setVerificationSent(false);
   }, [initialValue, visible]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleSend = async () => {
     setError(null);
@@ -87,9 +98,15 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
-        <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
-          {verificationSent ? (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={-insets.bottom + 16}
+        enabled={keyboardVisible}
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+      >
+        <View className="justify-end" style={{ flex: 1 }}>
+          <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
+            {verificationSent ? (
             <>
               <Text className="text-lg font-semibold mb-1">OTP verification sent</Text>
               <Text className="">Enter the 6-digit code sent to {email}</Text>
@@ -118,6 +135,7 @@ export default function EditEmailModal({ visible, initialValue, onClose, onSendV
           )}
         </View>
       </View>
+    </KeyboardAvoidingView>
     </Modal>
   );
 }

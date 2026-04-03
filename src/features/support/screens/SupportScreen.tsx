@@ -32,11 +32,19 @@ export default function SupportScreen() {
     try {
       const canOpen = await Linking.canOpenURL(url);
       if (!canOpen) {
-        show('warning', 'Email app not available', 'Please configure an email application on your device.');
-        return;
+        // console.warn('mailto canOpenURL false; trying openURL anyway:', url);
+        try {
+          await Linking.openURL(url);
+          return;
+        } catch (innerErr) {
+          // console.warn('Linking.openURL fallback failed:', innerErr);
+          show('warning', 'Email app not available', 'Please configure an email application on your device or send to ' + SUPPORT_EMAIL);
+          return;
+        }
       }
       await Linking.openURL(url);
     } catch (e) {
+      // console.error('Support submit error', e);
       show('danger', 'Could not open email', 'Please try again or contact support directly at ' + SUPPORT_EMAIL);
     }
   };
