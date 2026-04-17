@@ -6,10 +6,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icons/logo-icon.png",
-    "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/icons/splash.png",
+      "image": "./assets/icons/logo-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -23,15 +23,13 @@
       },
       "permissions": [
         "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
-        "android.permission.ACCESS_MEDIA_LOCATION",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
-      "edgeToEdgeEnabled": false,
+      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.Expo"
+      "package": "com.thyra.app",
+      "statusBarColor": "#ffffff",
+      "statusBarStyle": "dark"
     },
     "web": {
       "favicon": "./assets/favicon.png",

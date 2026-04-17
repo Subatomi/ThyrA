@@ -10,7 +10,6 @@ import {
   NativeScrollEvent,
   ImageSourcePropType,
 } from 'react-native';
-import Svg from 'react-native-svg';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -93,7 +92,7 @@ const OnBoardingScreen = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-100" edges={['top', 'bottom']}>
       {/* Header */}
       <View className="flex-row justify-between items-center mt-5 px-5">
         {currentIndex > 0 ? (

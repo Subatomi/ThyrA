@@ -22,7 +22,14 @@ export async function runInference(image) {
 
     return response;
   } catch (err) {
-    console.error("Inference API error:", err);
+    // console.error("Inference API error:", err);
+
+    if (err?.message?.includes("MAX_TEXT_CHUNK")) {
+      throw new Error(
+        "Photo is too large for analysis. Please try a smaller image."
+      );
+    }
+
     throw err;
   }
 }

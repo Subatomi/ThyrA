@@ -20,7 +20,9 @@ export type BBox = [number, number, number, number]
 
 export interface ThyrocyteDetection {
   bbox: BBox
+  status?: 'Adequate' | 'Inadequate' | 'Isolated'
   confidence: number
+  
 }
 
 export interface ClusterDetection {
@@ -175,7 +177,7 @@ export default function ReportFolderScreen() {
         reportId: report.id,
         reportName: report.image_name,
         folderId: numericFolderId,
-        reportDecode: report.detection_result ? JSON.stringify(report) : '',
+        reportDecode: report.detection_result ? JSON.stringify(report.detection_result) : '',
         originalWidth: report.original_width?.toString() || '',
         originalHeight: report.original_height?.toString() || '',
       },

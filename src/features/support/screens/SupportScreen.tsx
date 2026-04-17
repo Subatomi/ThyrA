@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Linking } from 'react-native';
 import BackButton from '@/components/BackButton';
 import FAQItem from '@/features/support/components/FAQItem';
+import { useToast } from '../../../contexts/ToastContext';
+
+// Default fallback values
+const DEFAULT_SUPPORT_EMAIL = 'ladera.portfolio@gmail.com';
+const DEFAULT_SUPPORT_PHONE = '+63 992 932 2972';
+
+// Use environment variables if available, otherwise use defaults
+const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
+const SUPPORT_PHONE = process.env.EXPO_PUBLIC_SUPPORT_PHONE || DEFAULT_SUPPORT_PHONE;
 
 const FAQ_ITEMS = [
   { q: 'How do I reset my password?', a: 'Go to Tab Button → Account → Change Password and follow the steps.' },
@@ -11,24 +20,32 @@ const FAQ_ITEMS = [
 ];
 
 export default function SupportScreen() {
+  const { show } = useToast();
   const [selectedFaq, setSelectedFaq] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
 
   const submitSupport = async () => {
-    const supportEmail = 'ladera.portfolio@gmail.com';
     const subject = 'ThyrA Support Request';
     const body = message.trim() || '';
-    const url = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     try {
       const canOpen = await Linking.canOpenURL(url);
       if (!canOpen) {
-        Alert.alert('Email app not available', 'Please configure an email application on your device.');
-        return;
+        // console.warn('mailto canOpenURL false; trying openURL anyway:', url);
+        try {
+          await Linking.openURL(url);
+          return;
+        } catch (innerErr) {
+          // console.warn('Linking.openURL fallback failed:', innerErr);
+          show('warning', 'Email app not available', 'Please configure an email application on your device or send to ' + SUPPORT_EMAIL);
+          return;
+        }
       }
       await Linking.openURL(url);
     } catch (e) {
-      Alert.alert('Could not open email', 'Please try again or contact support directly at ' + supportEmail);
+      // console.error('Support submit error', e);
+      show('danger', 'Could not open email', 'Please try again or contact support directly at ' + SUPPORT_EMAIL);
     }
   };
 
@@ -77,10 +94,10 @@ export default function SupportScreen() {
           <View className="bg-white rounded-md p-3">
             <Text className="font-semibold">Email</Text>
             <Text className="text-sm text-gray-600 mb-2">
-            ladera.portfolio@gmail.com
+            {SUPPORT_EMAIL}
             </Text>
             <Text className="font-semibold">Phone</Text>
-            <Text className="text-sm text-gray-600">+63 992 932 2972</Text>
+            <Text className="text-sm text-gray-600">{SUPPORT_PHONE}</Text>
           </View>
         </View>
 

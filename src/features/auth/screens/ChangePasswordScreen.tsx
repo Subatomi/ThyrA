@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, Pressable, ScrollView, ImageBackground, Alert } from 'react-native'
+import { View, Text, TextInput, Pressable, ScrollView, ImageBackground } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { resetPassword } from 'api/auth'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
+import { useToast } from '../../../contexts/ToastContext'
 
 export default function ChangePasswordScreen() {
+  const { show } = useToast()
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -14,19 +16,19 @@ export default function ChangePasswordScreen() {
 
   function validate() {
     if (!email) {
-      Alert.alert('Missing email', 'Email not found. Please restart the reset flow.')
+      show('danger', 'Missing email', 'Email not found. Please restart the reset flow.')
       return false
     }
     if (!newPassword || !confirmPassword) {
-      Alert.alert('Missing fields', 'Please fill in all fields.')
+      show('warning', 'Missing fields', 'Please fill in all fields.')
       return false
     }
     if (newPassword.length < 8) {
-      Alert.alert('Weak password', 'New password must be at least 8 characters.')
+      show('warning', 'Weak password', 'New password must be at least 8 characters.')
       return false
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert('Mismatch', 'New password and confirmation do not match.')
+      show('warning', 'Mismatch', 'New password and confirmation do not match.')
       return false
     }
     return true
@@ -37,11 +39,11 @@ export default function ChangePasswordScreen() {
     setLoading(true)
     try {
       await resetPassword({ email: String(email), new_password: newPassword })
-      Alert.alert('Success', 'Your password has been changed. Please sign in.')
+      show('success', 'Success', 'Your password has been changed. Please sign in.')
       router.replace('/sign-in')
     } catch (err: any) {
       console.error(err)
-      Alert.alert('Error', err?.message || 'Failed to change password')
+      show('danger', 'Error', err?.message || 'Failed to change password')
     } finally {
       setLoading(false)
     }

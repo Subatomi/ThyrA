@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, Pressable } from 'react-native';
 import { MoreVertical } from 'lucide-react-native';
+import CustomLoader from '@/components/CustomLoader';
 
 interface ReportCardProps {
   title: string;
@@ -13,6 +14,12 @@ interface ReportCardProps {
 }
 
 const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, onMenuPress, onLongPress, className }: ReportCardProps) => {
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  
+  // Create a unique cache-busting key for newly added images
+  const imageKey = imageSource?.uri ? `${imageSource.uri}-${Date.now()}` : 'default';
+  
   return (
     <Pressable 
       onPress={onPress}
@@ -27,11 +34,24 @@ const AssessmentReportCardWithSetting = ({ title, date, imageSource, onPress, on
       </View>
 
       {/* Slide Preview Image */}
-      <View className="mb-2 items-center justify-center ">
+      <View className="mb-2 relative w-full h-28 overflow-hidden items-center justify-center">
+        {imageLoading && !imageError && (
+          <View className="absolute inset-0 items-center justify-center bg-white/70">
+            <CustomLoader size="small" />
+          </View>
+        )}
         <Image 
-          source={imageSource ? imageSource : require('../../../../assets/img/sampleImages/sample1.jpg')} 
+          key={imageKey}
+          source={imageError || !imageSource ? require('../../../../assets/img/sampleImages/sample1.jpg') : imageSource}
           className="w-28 h-28"
           resizeMode="cover"
+          onLoadStart={() => setImageLoading(true)}
+          onLoadEnd={() => setImageLoading(false)}
+          onError={() => {
+            setImageError(true);
+            setImageLoading(false);
+          }}
+          style={{ opacity: imageLoading ? 0 : 1 }}
         />
       </View>
 

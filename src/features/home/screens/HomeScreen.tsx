@@ -1,6 +1,7 @@
+import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import ImageUploadArea from '../../../components/ImageUploadArea';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { FileQuestionMark } from 'lucide-react-native';
 import RecentAnalysis from '@/features/library/components/RecentAnalysis';
 import CustomLoader from '../../../components/CustomLoader';
@@ -36,10 +37,11 @@ export default function HomeScreen() {
   const [recent, setRecent] = useState<RecentItem[] | null>(null)
   const [loadingRecent, setLoadingRecent] = useState(false)
 
-  useEffect(() => {
+useFocusEffect(
+    React.useCallback(() => {
       let mounted = true
 
-      async function fetchRecentAnalyses() { 
+      async function fetchRecentAnalyses() {
         setLoadingRecent(true)
         try {
           const data = await getRecentAnalyses(3)
@@ -51,11 +53,13 @@ export default function HomeScreen() {
         } finally {
           if (mounted) setLoadingRecent(false)
         }
-      }                                 
+      }
 
       fetchRecentAnalyses()
+
       return () => { mounted = false }
     }, [])
+  )
 
   function handleImagePick(uri: string) {
     router.push({ pathname: '/analysis', params: { image: encodeURIComponent(uri) } })

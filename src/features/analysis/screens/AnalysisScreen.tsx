@@ -460,7 +460,7 @@
 //   );
 // }
 
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput, Dimensions, PixelRatio } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput, Dimensions, Platform, Linking } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
@@ -468,16 +468,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState, useEffect, useRef } from 'react';
 import { runInference } from 'api/image';
 import DetectionOverlay from '@/components/DetectionOverlay';
-import { ScanSearch } from 'lucide-react-native';
+import { ScanSearch, AlertTriangle } from 'lucide-react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
-import { Button } from 'react-native';
 import { getFolders } from '../../../../api/folder'
 import { uploadImage } from '../../../../api/image';
 import { DeviceEventEmitter } from 'react-native';
 import { useToast } from '../../../contexts/ToastContext'
 import { ResumableZoom } from 'react-native-zoom-toolkit'
 import * as ImageManipulator from 'expo-image-manipulator';
+import PermissionAlertModal from '../components/PermissionAlertModal';
+import FolderSelectionModal from '../components/FolderSelectionModal';
 
 export default function AnalysisScreen() {
   const emit = DeviceEventEmitter.emit.bind(DeviceEventEmitter)
@@ -513,6 +514,7 @@ export default function AnalysisScreen() {
   const [savingImage, setSavingImage] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [showPermissionAlert, setShowPermissionAlert] = useState(false)
 
   const captureRef2 = useRef<View>(null);
 
@@ -581,7 +583,7 @@ export default function AnalysisScreen() {
         emit('recentAnalyses', { action: 'add', item: createdItem })
       } else {
         emit(`folder:${selectedFolder.id}`)
-        emit('recentAnalyses')
+        emit('recentAnalyses', { action: 'refresh' })
       }
       show('success', 'Saved', 'Image saved successfully!')
       setSelectedFolder(null)
@@ -618,32 +620,44 @@ export default function AnalysisScreen() {
   }, [image]);
 
   const handleDownload = async () => {
-    if (!detectionRef.current || !isLayoutReady) {
-      show('warning', 'Not Ready', 'Please wait for detection to complete.')
-      return;
-    }
     try {
       setDownloading(true);
 
-      const { status } = await MediaLibrary.requestPermissionsAsync(true);
-      if (status !== 'granted') {
-        show('warning', 'Permission Denied', 'Cannot save image without permission.')
-        return;
+      const permissionResult = await MediaLibrary.requestPermissionsAsync(true);
+
+      if (permissionResult.status !== 'granted') {
+        if (permissionResult.canAskAgain) {
+          const retryResult = await MediaLibrary.requestPermissionsAsync(true);
+          if (retryResult.status !== 'granted') {
+            showPermissionDeniedAlert();
+            return;
+          }
+        } else {
+          showPermissionDeniedAlert();
+          return;
+        }
       }
 
-
-      // Permission is granted, save directly
       const imageUri = await captureRef(captureRef2, { format: 'png', quality: 1 });
       const asset = await MediaLibrary.createAssetAsync(imageUri);
       await MediaLibrary.createAlbumAsync('DetectionResults', asset, false);
       show('success', 'Saved', 'Image saved to your gallery!')
     } catch (err: any) {
-      console.error('Download error:', err);
+      // console.error('Download error:', err);
+      if (err.message?.includes('User didn\'t grant write permission') || 
+        err.message?.includes('rejected')) {
+        return;
+      }
       show('danger', 'Error', err.message || 'Failed to save image.')
     } finally {
       setDownloading(false);
     }
   };
+
+    const showPermissionDeniedAlert = () => {
+    setShowPermissionAlert(true);
+  };
+
 
   const getImageMetaFromUri = (uri: string) => {
     const filename = uri.split('/').pop() || 'image.jpg';
@@ -804,8 +818,8 @@ export default function AnalysisScreen() {
             <View className="flex-col gap-2">
               <Pressable className="flex-1" onPress={handleDownload} disabled={downloading}>
                 <View
-                  style={{ elevation: 3 }}
-                  className={`py-3 rounded-sm items-center justify-center ${downloading ? "bg-gray-400" : "bg-blue-500"}`}
+                  style={{ elevation: 3, backgroundColor: downloading ? '#9ca3af' : '#16a34a' }}
+                  className="py-3 rounded-sm items-center flex-row justify-center gap-2"
                 >
                   {downloading ? (
                     <ActivityIndicator color="white" />
@@ -840,38 +854,13 @@ export default function AnalysisScreen() {
       </View>
 
       {/* Folder Selection Popup */}
-      <Modal visible={showFolderPopup} transparent={true} animationType="slide" onRequestClose={() => setShowFolderPopup(false)}>
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl max-h-3/4">
-            <View className="p-4 border-b border-gray-200">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-xl font-bold text-gray-900">Select Folder</Text>
-                <TouchableOpacity onPress={() => setShowFolderPopup(false)}>
-                  <Text className="text-lg text-gray-500">✕</Text>
-                </TouchableOpacity>
-              </View>
-              <Text className="text-gray-600">Choose where to save the image</Text>
-            </View>
-            {foldersLoading ? (
-              <View className="p-6 items-center">
-                <ActivityIndicator />
-                <Text className="text-gray-500 mt-2">Loading folders...</Text>
-              </View>
-            ) : (
-              <FlatList
-                data={folders}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <FolderItem folder={item} />}
-                ListEmptyComponent={
-                  <View className="p-6 items-center">
-                    <Text className="text-gray-500">No folders found</Text>
-                  </View>
-                }
-              />
-            )}
-          </View>
-        </View>
-      </Modal>
+      <FolderSelectionModal
+        visible={showFolderPopup}
+        onClose={() => setShowFolderPopup(false)}
+        folders={folders}
+        loading={foldersLoading}
+        onSelectFolder={handleFolderSelect}
+      />
 
       {/* File Name Input Popup */}
       <Modal
@@ -902,14 +891,17 @@ export default function AnalysisScreen() {
               <TouchableOpacity
                 className="bg-blue-500 px-5 py-2 rounded-lg"
                 onPress={handleConfirmFileName}
-                disabled={loading}
+                disabled={savingImage}
               >
-                {loading ? <ActivityIndicator color="white" size="small" /> : <Text className="text-white font-medium">Save</Text>}
+                {savingImage ? <ActivityIndicator color="white" size="small" /> : <Text className="text-white font-medium">Save</Text>}
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
+
+      {/* Permission Alert Modal */}
+      <PermissionAlertModal visible={showPermissionAlert} onClose={() => setShowPermissionAlert(false)} />
     </ScrollView>
   );
 }

@@ -1,5 +1,6 @@
-import { Pressable, View, Text, Alert, FlatList } from 'react-native';
+import { Pressable, View, Text, Alert, FlatList, ActivityIndicator } from 'react-native';
 import BackButton from '../../../components/BackButton';
+import CustomLoader from '@/components/CustomLoader';
 import FolderCard from '../components/FolderCardWithSetting';
 import CreateFolderButton from '../components/CreateFolderButton';
 import CreateFolderProvider from '../hooks/CreateFolderModalContext';
@@ -24,6 +25,7 @@ type FolderFormData = {
 
 type ScreenContentProps = {
   folders: Folder[];
+  loading: boolean;
   onCreate: (data: FolderFormData) => void;
   onEdit: (originalName: string | undefined, data: FolderFormData) => void;
   onDelete: (name?: string) => void;
@@ -31,7 +33,7 @@ type ScreenContentProps = {
 
 
 
-function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentProps) {
+function ScreenContent({ folders, loading, onCreate, onEdit, onDelete }: ScreenContentProps) {
   return (
     <View className='flex-1 bg-gray-100 p-5'>
       <View className="w-full mb-4 flex-row items-center px-5 py-2">
@@ -43,27 +45,31 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentPro
       </View>
 
       <View className='flex-1'>
-         {folders.length === 0 ? (
-            <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
-              <FolderSearch size={48} color="#9CA3AF" />
-              <Text className="text-gray-400 mt-2 text-center">
-                No folders here. Create some folders to see them here!
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={folders}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-              columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: -8 }}
-              renderItem={({ item }) => (
-                <View className="px-2 mb-4" style={{ width: 160 }}>
-                  <FolderCard id={item.id} title={item.title} />
-                </View>
-              )}
-            />
-          )}  
+        {loading ? (
+          <View className="flex-1 items-center justify-center">
+            <CustomLoader size="large" message="Loading folders..." />
+          </View>
+        ) : folders.length === 0 ? (
+          <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
+            <FolderSearch size={48} color="#9CA3AF" />
+            <Text className="text-gray-400 mt-2 text-center">
+              No folders here. Create some folders to see them here!
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={folders}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
+            columnWrapperStyle={{ justifyContent: 'space-between', marginHorizontal: -8 }}
+            renderItem={({ item }) => (
+              <View className="px-2 mb-4" style={{ width: 160 }}>
+                <FolderCard id={item.id} title={item.title} />
+              </View>
+            )}
+          />
+        )}  
       </View>
 
       <CreateFolderButton />
@@ -73,10 +79,12 @@ function ScreenContent({ folders, onCreate, onEdit, onDelete }: ScreenContentPro
 
 export default function FolderLibraryScreen() {
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [loading, setLoading] = useState(true);
   const { show } = useToast();
 
   const fetchFolders = async () => {
     try {
+      setLoading(true);
       const data = await getFolders();
 
       const formattedData: Folder[] = data.map((f: any) => ({
@@ -88,9 +96,9 @@ export default function FolderLibraryScreen() {
 
       setFolders(formattedData);
     } catch (error: any) {
-      
       show('warning','Info', error.message);
-      // Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -142,7 +150,7 @@ export default function FolderLibraryScreen() {
 
   return (
     <CreateFolderProvider onCreate={handleCreate} onEdit={handleEdit} onDelete={handleDelete}>
-      <ScreenContent folders={folders} onCreate={handleCreate} onEdit={handleEdit} onDelete={handleDelete} />
+      <ScreenContent folders={folders} loading={loading} onCreate={handleCreate} onEdit={handleEdit} onDelete={handleDelete} />
     </CreateFolderProvider>
   );
 }

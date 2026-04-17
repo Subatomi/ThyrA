@@ -3,10 +3,11 @@ import { View, Text, TextInput, Pressable, Image, ScrollView, ImageBackground} f
 import { useRouter } from 'expo-router'
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical'
 import { signup } from 'api/auth'
-import { Alert } from "react-native";
+import { useToast } from '../../../contexts/ToastContext'
 import Background from '@/components/Background'
 
 const SignUpScreen: React.FC = () => {
+	const { show } = useToast()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [confirmPassword, setConfirmPassword] = useState('')
@@ -18,12 +19,12 @@ const SignUpScreen: React.FC = () => {
 	//Handle SignUp function
 	const handleSignup = async () => {
 		if (!firstName || !lastName || !email || !password || !confirmPassword) {
-			Alert.alert("Missing fields", "Please fill in all fields.");
+			show('warning', 'Missing fields', 'Please fill in all fields.');
 			return;
 		}
 
 		if (password !== confirmPassword) {
-			Alert.alert("Password mismatch", "Passwords do not match.");
+			show('warning', 'Password mismatch', 'Passwords do not match.');
 			return;
 		}
 
@@ -37,12 +38,12 @@ const SignUpScreen: React.FC = () => {
 				password,
 			});
 
-			console.log("Signup success:", response);
+			// console.log("Signup success:", response);
 
 			//navigate after successful signup
 			router.replace("/sign-in");
 		} catch (error: any) {
-			Alert.alert("Signup failed", error.message);
+			show('danger', 'Signup failed', error.message);
 		} finally {
 			setLoading(false);
 		}

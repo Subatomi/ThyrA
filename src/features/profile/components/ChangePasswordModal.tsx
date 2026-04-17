@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { changePassword } from 'api/auth';
 type Result = { success: boolean; error?: string };
 
@@ -10,12 +11,14 @@ type Props = {
 
 
 export default function ChangePasswordModal({ visible, onClose }: Props) {
+  const insets = useSafeAreaInsets();
   const [current, setCurrent] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -26,6 +29,16 @@ export default function ChangePasswordModal({ visible, onClose }: Props) {
       setSuccess(false);
     }
   }, [visible]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleChange = async () => {
     setError(null);
@@ -48,9 +61,15 @@ export default function ChangePasswordModal({ visible, onClose }: Props) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} className="justify-end">
-        <View className="bg-white rounded-t-xl p-4 border-t border-gray-200">
-          <Text className="text-lg font-semibold mb-3">Change password</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={-insets.bottom}
+        enabled={keyboardVisible}
+        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+      >
+        <View className="justify-end" style={{ flex: 1 }}>
+          <View style={{ paddingBottom: insets.bottom }} className="bg-white rounded-t-xl p-4 border-t border-gray-200">
+            <Text className="text-lg font-semibold mb-3">Change password</Text>
 
           {success ? (
             <View>
@@ -75,6 +94,7 @@ export default function ChangePasswordModal({ visible, onClose }: Props) {
           )}
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
