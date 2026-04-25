@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { router } from 'expo-router'
 
 // Default fallback values
-const DEFAULT_BASE_URL = "http://192.168.254.120:8000";
+const DEFAULT_BASE_URL = "https://thyra.onrender.com";
 
 // Use environment variable if available, otherwise use default
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_BASE_URL;
