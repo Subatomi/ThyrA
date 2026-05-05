@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const DEFAULT_BASE_URL = "https://thyra.onrender.com";
 
 // Use environment variable if available, otherwise use default
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_BASE_URL;
+const BASE_URL = "https://thyra.onrender.com";
 
 // export async function apiRequest(endpoint, options = {}) {
 //   // Get token from AsyncStorage (or SecureStore)

@@ -644,7 +644,7 @@ export default function AnalysisScreen() {
       show('success', 'Saved', 'Image saved to your gallery!')
     } catch (err: any) {
       // console.error('Download error:', err);
-      if (err.message?.includes('User didn\'t grant write permission') || 
+      if (err.message?.includes('User didn\'t grant write permission') ||
         err.message?.includes('rejected')) {
         return;
       }
@@ -654,7 +654,7 @@ export default function AnalysisScreen() {
     }
   };
 
-    const showPermissionDeniedAlert = () => {
+  const showPermissionDeniedAlert = () => {
     setShowPermissionAlert(true);
   };
 
@@ -766,34 +766,34 @@ export default function AnalysisScreen() {
             */}
             <View style={{ overflow: 'hidden' }}>
               <ResumableZoom maxScale={8} minScale={1} >
+                <View
+                  ref={captureRef2}
+                  collapsable={false}
+                  style={{
+                    backgroundColor: 'white', // or any background color you want
+                    padding: CAPTURE_PADDING,
+                  }}
+                >
                   <View
-                    ref={captureRef2}
+                    ref={detectionRef}
                     collapsable={false}
                     style={{
-                      backgroundColor: 'white', // or any background color you want
-                      padding: CAPTURE_PADDING,
+                      width: captureImageWidth,
+                      aspectRatio: imageSize.width / imageSize.height,
+                      marginVertical: 10,
                     }}
+                    onLayout={() => setIsLayoutReady(true)}
                   >
-                    <View
-                      ref={detectionRef}
-                      collapsable={false}
-                      style={{
-                        width: captureImageWidth,
-                        aspectRatio: imageSize.width / imageSize.height,
-                        marginVertical: 10,
-                      }}
-                      onLayout={() => setIsLayoutReady(true)}
-                    >
 
-                      <DetectionOverlay
-                        imageUri={analyzedImageUri}
-                        thyrocytes={result.detections?.thyrocytes}
-                        clusters={result.detections?.clusters}
-                        originalWidth={imageSize.width}
-                        originalHeight={imageSize.height}
-                        displayWidth={captureImageWidth} 
-                      />
-                    </View>
+                    <DetectionOverlay
+                      imageUri={analyzedImageUri}
+                      thyrocytes={result.detections?.thyrocytes}
+                      clusters={result.detections?.clusters}
+                      originalWidth={imageSize.width}
+                      originalHeight={imageSize.height}
+                      displayWidth={captureImageWidth}
+                    />
+                  </View>
                 </View>
               </ResumableZoom>
             </View>
@@ -829,12 +829,30 @@ export default function AnalysisScreen() {
                 </View>
               </Pressable>
 
-              <Pressable className="flex-1 mb-6" onPress={handleSaveImage} disabled={savingImage}>
+              {/* <Pressable className="flex-1 mb-6" onPress={handleSaveImage} disabled={savingImage}>
                 <View
                   style={{ elevation: 3 }}
                   className={`py-3 rounded-sm items-center justify-center ${savingImage ? "bg-gray-400" : "bg-blue-500"}`}
                 >
                   {savingImage ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white font-bold">Save Image</Text>
+                  )}
+                </View>
+              </Pressable> */}
+
+              <Pressable
+                className="flex-1 mb-6"
+                onPress={handleSaveImage}
+                disabled={foldersLoading || savingImage}
+              >
+                <View
+                  style={{ elevation: 3 }}
+                  className={`py-3 rounded-sm items-center justify-center ${(foldersLoading || savingImage) ? "bg-gray-400" : "bg-blue-500"
+                    }`}
+                >
+                  {(foldersLoading || savingImage) ? (
                     <ActivityIndicator color="white" />
                   ) : (
                     <Text className="text-white font-bold">Save Image</Text>
