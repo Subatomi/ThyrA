@@ -41,6 +41,8 @@ const SignInScreen: React.FC = () => {
 		} catch (error: any) {
 			// console.log(error)
       		show('danger', 'Log In failed', 'Email or password is wrong. Please try again.');
+		} finally {
+			setLoading(false);
 		}
 	};
 
