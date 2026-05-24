@@ -248,6 +248,10 @@ export default function ReportScreen() {
   const detectionRef = useRef<View>(null)   // ← layout-ready signal only
 
   useEffect(() => {
+    setDisplayName(reportName ?? '')
+  }, [reportName])
+
+  useEffect(() => {
     if (reportDecode) {
       const parsed = JSON.parse(reportDecode)
       setResult({ detection_result: parsed })
