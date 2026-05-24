@@ -15,8 +15,8 @@ const SUPPORT_PHONE = process.env.EXPO_PUBLIC_SUPPORT_PHONE || DEFAULT_SUPPORT_P
 
 const FAQ_ITEMS = [
   { q: 'How do I reset my password?', a: 'Go to Tab Button → Account → Change Password and follow the steps.' },
-  { q: 'How do I update my email address?', a: 'Open your Profile → Edit Profile → Email and follow the steps' },
-  { q: 'Where are my reports stored?', a: 'Reports are saved under Library → Reports' },
+  { q: 'How do I update my email address?', a: 'Use the account settings page to update email and profile details.' },
+  { q: 'Where are my reports stored?', a: 'Reports are saved in the app and can be accessed from the Home screen.' },
 ];
 
 export default function SupportScreen() {

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router'
-import { Home, ImagePlus, Folder } from 'lucide-react-native'
+import { Home, ImagePlus } from 'lucide-react-native'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import CustomHeader from '../../src/features/tabs/TabHeader'
@@ -48,22 +48,6 @@ export default function TabLayout() {
               ),
             }}
           />
-          <Tabs.Screen
-            name="folder"
-            options={{
-              tabBarIcon: ({ color, focused }) => (
-                <TabIconWrapper Icon={Folder} color={color} focused={focused} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="report-folder"
-            options={{
-              href: null,
-            }}
-          />
-
-            
           <Tabs.Screen
             name="report-analysis"
             options={{

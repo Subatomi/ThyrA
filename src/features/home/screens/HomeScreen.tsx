@@ -3,7 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import ImageUploadArea from '../../../components/ImageUploadArea';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { FileQuestionMark } from 'lucide-react-native';
-import RecentAnalysis from '@/features/library/components/RecentAnalysis';
+import RecentAnalysis from '../components/RecentAnalysis';
 import CustomLoader from '../../../components/CustomLoader';
 import useGreeting from '../hooks/useGreeting';
 import { useEffect, useState } from 'react';

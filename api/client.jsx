@@ -67,15 +67,12 @@ export async function apiRequest(endpoint, options = {}) {
       return { detail: "Successfully deleted" };
     }
 
-    // If the token is invalid/expired, force logout and redirect to sign-in
     if (response.status === 401) {
       try {
         await AsyncStorage.removeItem('access_token')
       } catch (e) {
         // ignore
       }
-      // navigate back to sign-in screen
-      try { router.replace('/sign-in') } catch (e) {}
       throw new Error('Unauthorized')
     }
 

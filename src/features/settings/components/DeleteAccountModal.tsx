@@ -29,7 +29,7 @@ export default function DeleteAccountModal({ visible, onClose }: Props) {
       setPassword('')
       setConfirmPhrase('')
       onClose()
-      // Clear auth token(s) and navigate to sign-in
+      // Clear auth token(s) and stay on the home page
       try {
         await AsyncStorage.removeItem('access_token')
       } catch {}
@@ -37,15 +37,7 @@ export default function DeleteAccountModal({ visible, onClose }: Props) {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [
-            {
-              name: '(auth)',
-              state: {
-                index: 0,
-                routes: [{ name: 'sign-in' }],
-              },
-            },
-          ],
+          routes: [{ name: 'home' }],
         })
       )
     } catch (e: any) {

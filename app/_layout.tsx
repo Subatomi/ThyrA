@@ -18,8 +18,6 @@ export default function RootLayout() {
               <Stack.Screen name="index" />
               <Stack.Screen name="onboarding" />
               <Stack.Screen name="about" />
-              {/* Auth flows as a grouped stack */}
-              <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
               {/* Main tabs */}
               <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
             </Stack>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { DeviceEventEmitter } from 'react-native'
+import { DeviceEventEmitter } from 'react-native';
 import AssessmentReportCard from './AssessmentReportCard';
 import { getRecentAnalyses } from '../../../../api/image';
 import { useRouter } from 'expo-router';
@@ -27,7 +27,6 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Initial fetch
   useEffect(() => {
     if (initialItems) return;
 
@@ -58,18 +57,51 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
     }
 
     fetchRecent();
-    return () => { mounted = false };
+    return () => {
+      mounted = false;
+    };
   }, [initialItems, limit]);
 
   useEffect(() => {
-    // Add new item after upload
     const addSub = DeviceEventEmitter.addListener('recentAnalyses', (payload: any) => {
       if (!payload || payload.action === 'refresh') {
         (async () => {
-          setLoading(true)
+          setLoading(true);
           try {
-            const data = await getRecentAnalyses(limit)
-            setItems((data || []).map((it: any) => ({
+            const data = await getRecentAnalyses(limit);
+            setItems(
+              (data || []).map((it: any) => ({
+                id: String(it.id),
+                image_name: it.image_name,
+                image_url: it.image_url,
+                date: it.date ?? '',
+                detection_result: it.detection_result ?? null,
+                folder_id: String(it.folder_id),
+                original_width: it.original_width,
+                original_height: it.original_height,
+              }))
+            );
+          } catch (e) {
+            console.error('Failed to refetch recent analyses', e);
+          } finally {
+            setLoading(false);
+          }
+        })();
+        return;
+      }
+      if (payload.action === 'add' && payload.item) {
+        setItems((prev) => (prev ? [payload.item, ...prev] : [payload.item]));
+      }
+    });
+
+    const removeSub = DeviceEventEmitter.addListener('recentAnalyses:remove', (payload: any) => {
+      if (!payload?.id) return;
+      setItems((prev) => (prev ? prev.filter((r) => r.id !== payload.id) : prev));
+      (async () => {
+        try {
+          const data = await getRecentAnalyses(limit);
+          setItems(
+            (data || []).map((it: any) => ({
               id: String(it.id),
               image_name: it.image_name,
               image_url: it.image_url,
@@ -78,58 +110,29 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
               folder_id: String(it.folder_id),
               original_width: it.original_width,
               original_height: it.original_height,
-            })))
-          } catch (e) {
-            console.error('Failed to refetch recent analyses', e)
-          } finally {
-            setLoading(false)
-          }
-        })()
-        return
-      }
-      if (payload.action === 'add' && payload.item) {
-        setItems((prev) => prev ? [payload.item, ...prev] : [payload.item])
-      }
-    })
-
-    // Remove deleted item
-    const removeSub = DeviceEventEmitter.addListener('recentAnalyses:remove', (payload: any) => {
-      if (!payload?.id) return
-      setItems((prev) => prev ? prev.filter((r) => r.id !== payload.id) : prev)
-      ;(async () => {
-        try {
-          const data = await getRecentAnalyses(limit)
-          setItems((data || []).map((it: any) => ({
-            id: String(it.id),
-            image_name: it.image_name,
-            image_url: it.image_url,
-            date: it.date ?? '',
-            detection_result: it.detection_result ?? null,
-            folder_id: String(it.folder_id),
-            original_width: it.original_width,
-            original_height: it.original_height,
-          })))
+            }))
+          );
         } catch (e) {
-          console.error('Failed to refetch after delete', e)
+          console.error('Failed to refetch after delete', e);
         }
-      })()
-    })
+      })();
+    });
 
-    // Sync rename from any screen
     const renameSub = DeviceEventEmitter.addListener('report:rename', (payload: any) => {
-      if (!payload?.id) return
-      setItems((prev) => prev
-        ? prev.map((r) => r.id === payload.id ? { ...r, image_name: payload.name } : r)
-        : prev
-      )
-    })
+      if (!payload?.id) return;
+      setItems((prev) =>
+        prev
+          ? prev.map((r) => (r.id === payload.id ? { ...r, image_name: payload.name } : r))
+          : prev
+      );
+    });
 
     return () => {
-      addSub.remove()
-      removeSub.remove()
-      renameSub.remove()
-    }
-  }, [limit])
+      addSub.remove();
+      removeSub.remove();
+      renameSub.remove();
+    };
+  }, [limit]);
 
   if (loading) return <ActivityIndicator />;
   if (!items || items.length === 0) return null;
@@ -151,7 +154,6 @@ const RecentAnalysis: React.FC<Props> = ({ items: initialItems, limit = 3 }) => 
                   reportId: item.id,
                   reportName: item.image_name,
                   folderId: item.folder_id,
-                  //reportDecode: JSON.stringify(item),
                   reportDecode: item.detection_result ? JSON.stringify(item.detection_result) : '',
                   originalWidth: item.original_width?.toString() || '',
                   originalHeight: item.original_height?.toString() || '',

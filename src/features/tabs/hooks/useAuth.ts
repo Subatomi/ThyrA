@@ -8,8 +8,8 @@ export default function useAuth() {
     try {
       // clear auth tokens and any related stored data
       await AsyncStorage.removeItem('access_token')
-      // navigate to the root / sign-in page
-      router.replace('/')
+      // navigate to the home page
+      router.replace('/home')
     } catch (err) {
       console.error('Logout failed', err)
     }

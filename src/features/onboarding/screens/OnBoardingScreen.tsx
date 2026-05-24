@@ -60,18 +60,17 @@ const OnBoardingScreen = () => {
     if (currentIndex < DATA.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      // After completing onboarding, mark as shown and send user to sign-in page
+      // After completing onboarding, mark as shown and send user to the home page
       (async () => {
         try {
           await AsyncStorage.setItem('onboarding_shown', '1');
         } catch (e) {
           // ignore storage errors
         }
-        router.push('/sign-in');
+        router.push('/home');
       })();
     }
   };
-
 
   const goBack = () => {
     if (currentIndex > 0) {

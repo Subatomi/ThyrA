@@ -204,9 +204,6 @@ import { ScanSearch, Download, Trash2, Pencil } from 'lucide-react-native';
 import { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
 import { Dimensions, DeviceEventEmitter } from 'react-native';
-import EditReportTitleModal from '../../library/components/EditReportTitleModal'
-import DeleteReportModal from '../../library/components/DeleteReportModal'
-import { useReportActions } from '../../analysis/hooks/userReportActions'
 import { useToast } from '../../../contexts/ToastContext'
 import { ResumableZoom } from 'react-native-zoom-toolkit'
 import PermissionAlertModal from '../components/PermissionAlertModal'
@@ -228,7 +225,6 @@ export default function ReportScreen() {
     originalHeight?: string
   }>()
 
-  const { deleteReport, renameReport } = useReportActions()
   const { show } = useToast()
 
   const currentReportId = reportId ? String(reportId) : null
@@ -237,8 +233,6 @@ export default function ReportScreen() {
   const [result, setResult] = useState<any>(null)
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null)
   const [displayName, setDisplayName] = useState(reportName ?? '')
-  const [editModalVisible, setEditModalVisible] = useState(false)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [isLayoutReady, setIsLayoutReady] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [showPermissionAlert, setShowPermissionAlert] = useState(false)
@@ -405,34 +399,6 @@ export default function ReportScreen() {
               </Pressable>
             </View>
 
-            {/* Edit controls */}
-            <View className="bg-white rounded-md p-4 gap-3" style={{ elevation: 1 }}>
-              <Text className="text-black font-bold">Edit</Text>
-              <View className='flex-row justify-end gap-3'>
-                <Pressable onPress={() => setEditModalVisible(true)}>
-                  {({ pressed }) => (
-                    <View
-                      className="p-2 rounded-md flex-row gap-2 border border-black/20"
-                      style={{ backgroundColor: pressed ? '#e5e7eb' : '#f3f4f6' }}
-                    >
-                      <Pencil size={16} color="#6b7280" />
-                      <Text className="text-black/60">Edit Name</Text>
-                    </View>
-                  )}
-                </Pressable>
-                <Pressable onPress={() => setDeleteModalVisible(true)}>
-                  {({ pressed }) => (
-                    <View
-                      className="p-2 rounded-md flex-row gap-2 border border-black/20"
-                      style={{ backgroundColor: pressed ? '#e5e7eb' : '#f3f4f6' }}
-                    >
-                      <Trash2 size={16} color="#6b7280" />
-                      <Text className="text-black/60">Delete Report</Text>
-                    </View>
-                  )}
-                </Pressable>
-              </View>
-            </View>
           </>
         ) : imageLoading ? null : (
           <View className="bg-white rounded-xl p-4 items-center justify-center border-2 border-dashed border-gray-300">
@@ -443,28 +409,6 @@ export default function ReportScreen() {
           </View>
         )}
       </View>
-
-      <EditReportTitleModal
-        visible={editModalVisible}
-        initialName={displayName}
-        onClose={() => setEditModalVisible(false)}
-        onSave={(newName) => {
-          if (!currentReportId) return
-          renameReport(currentReportId, newName, (updated) => setDisplayName(updated))
-          setEditModalVisible(false)
-        }}
-      />
-
-      <DeleteReportModal
-        visible={deleteModalVisible}
-        reportName={displayName}
-        onClose={() => setDeleteModalVisible(false)}
-        onConfirm={() => {
-          if (!currentReportId) return
-          deleteReport(currentReportId, { navigateBack: true })
-          setDeleteModalVisible(false)
-        }}
-      />
 
       <PermissionAlertModal visible={showPermissionAlert} onClose={() => setShowPermissionAlert(false)} />
     </ScrollView>

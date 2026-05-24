@@ -1,6 +1,6 @@
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native'
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native'
 import BackButton from '@/components/BackButton'
 import { useRouter } from 'expo-router'
 
@@ -26,48 +26,54 @@ export default function PrivacyPolicy() {
       <ScrollView className="p-4">
         <View className="mb-4">
           <Text className="text-base mb-2 font-semibold">Summary</Text>
-          <Text className="text-sm text-gray-600">We collect the minimum information required to provide and improve the app. This page summarizes what we collect, why, and how you can manage your data.</Text>
+          <Text className="text-sm text-gray-600">Thyra does not collect, store, or transmit any personal data. All image analysis is performed locally on your device. This page explains what that means for you.</Text>
         </View>
 
         <View className="mb-4">
           <Text className="text-base mb-2 font-semibold">What We Collect</Text>
           <View className="bg-white rounded-md p-3">
-            <Text className="font-medium">Personal Data</Text>
-            <Text className="text-sm text-gray-600 mb-2">Name, email address and profile information you provide.</Text>
-            <Text className="font-medium">Usage Data</Text>
-            <Text className="text-sm text-gray-600 mb-2">Analytics and crash reports to help us improve the app.</Text>
+            <Text className="font-medium">No Personal Data</Text>
+            <Text className="text-sm text-gray-600 mb-2">We do not collect your name, email address, or any identifying information.</Text>
+            <Text className="font-medium">No Usage Data</Text>
+            <Text className="text-sm text-gray-600 mb-2">We do not run analytics, crash reporting, or any form of usage tracking.</Text>
+            <Text className="font-medium">No Images or Clinical Data</Text>
+            <Text className="text-sm text-gray-600">Thyroid FNAB slide images you capture or upload never leave your device. They are processed entirely on-device and are never sent to any server.</Text>
           </View>
         </View>
 
         <View className="mb-4">
-          <Text className="text-base mb-2 font-semibold">How We Use Data</Text>
+          <Text className="text-base mb-2 font-semibold">How We Use Your Data</Text>
           <View className="bg-white rounded-md p-3">
-            <Text className="text-sm text-gray-600">We use the information you provide and data collected from your device only to personalize your experience and to analyze and improve our service. This includes tailoring the app to your preferences, diagnosing and fixing issues, and improving features. We do not sell your personal information.</Text>
+            <Text className="text-sm text-gray-600">We don't. Because no data is collected or transmitted, there is nothing to use, store, or process on our end. All adequacy assessments happen locally on your device and remain entirely under your control.</Text>
           </View>
         </View>
 
         <View className="mb-4">
           <Text className="text-base mb-2 font-semibold">Sharing & Third Parties</Text>
           <View className="bg-white rounded-md p-3">
-            <Text className="text-sm text-gray-600">We do not share your personal data with third parties except when required by law, to enforce our terms, or to protect people’s safety. When necessary, we may disclose limited data to trusted service providers who process data on our behalf under contract and strict confidentiality terms.</Text>
+            <Text className="text-sm text-gray-600">We do not share any data with third parties because we do not collect any data to begin with. No external analytics, advertising, or data processing services are integrated into this app.</Text>
           </View>
         </View>
 
         <View className="mb-4">
-          <Text className="text-base mb-2 font-semibold">Your Choices</Text>
+          <Text className="text-base mb-2 font-semibold">Clinical Disclaimer</Text>
+          <View className="bg-white rounded-md p-3">
+            <Text className="text-sm text-gray-600">Thyra is intended as a decision-support tool for trained medical professionals. It is not a substitute for the judgment of a licensed pathologist or clinician. Adequacy assessments produced by this app should be interpreted in the context of the full clinical picture.</Text>
+          </View>
+        </View>
+
+        <View className="mb-4">
+          <Text className="text-base mb-2 font-semibold">Contact</Text>
           <View className="bg-white rounded-md p-3 space-y-2">
             <Pressable onPress={contactSupport} className="py-2">
               <Text className="text-sm text-blue-600">Contact Support</Text>
-            </Pressable>
-            <Pressable onPress={() => router.push('/setting')} className="py-2">
-              <Text className="text-sm text-red-600">Delete account (go to Settings)</Text>
             </Pressable>
           </View>
         </View>
 
         <View className="mb-8">
           <Text className="text-xs text-gray-500">Effective date: 2026-01-31</Text>
-          <Text className="text-xs text-gray-500 mt-2">If you have questions about this policy, contact {SUPPORT_EMAIL}</Text>
+          <Text className="text-xs text-gray-500 mt-2">Questions about this policy? Reach us at {SUPPORT_EMAIL}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

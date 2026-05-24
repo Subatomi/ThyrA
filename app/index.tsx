@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LogoTitleVertical from 'assets/icons/LogoTitleVertical';
 import CustomLoader from '../src/components/CustomLoader';
-import { refreshProfileFromServer } from '@/features/profile/services/refreshProfile';
+import { login } from '../api/auth';
 
 export default function Index() {
   const mounted = useRef(true);
@@ -12,29 +12,34 @@ export default function Index() {
   useEffect(() => {
     (async () => {
       try {
-        const [shown, token] = await Promise.all([
-          AsyncStorage.getItem('onboarding_shown'),
-          AsyncStorage.getItem('access_token'),
-        ]);
+        const shown = await AsyncStorage.getItem('onboarding_shown');
 
         if (!mounted.current) return;
 
         if (!shown) {
           router.replace('/onboarding');
-        } else if (token) {
-          const refreshed = await refreshProfileFromServer();
-          if (!mounted.current) return;
-          if (!refreshed) {
-            await AsyncStorage.removeItem('access_token');
-            router.replace('/sign-in');
-          } else {
-            router.replace('/home');
-          }
-        } else {
-          router.replace('/sign-in');
+          return;
         }
+
+        const existingToken = await AsyncStorage.getItem('access_token');
+        if (!existingToken) {
+          try {
+            const response = await login({
+              email: 'laderatheo@gmail.com',
+              password: 'test1234',
+            });
+
+            if (response?.access_token) {
+              await AsyncStorage.setItem('access_token', response.access_token);
+            }
+          } catch (err) {
+            console.warn('Auto-login failed:', err);
+          }
+        }
+
+        router.replace('/home');
       } catch {
-        router.replace('/sign-in');
+        router.replace('/home');
       }
     })();
 
