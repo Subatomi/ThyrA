@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput, Dimensions, Platform, Linking } from 'react-native';
+﻿import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator, Image, Modal, TouchableOpacity, FlatList, TextInput, Dimensions, Platform, Linking } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import BackButton from '../../../components/BackButton';
 import ImageUploadArea from '../../../components/ImageUploadArea';
@@ -17,6 +17,16 @@ import { ResumableZoom } from 'react-native-zoom-toolkit'
 import * as ImageManipulator from 'expo-image-manipulator';
 import PermissionAlertModal from '../components/PermissionAlertModal';
 import FolderSelectionModal from '../components/FolderSelectionModal';
+import * as FileSystem from 'expo-file-system/legacy';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const SAVED_RESULTS_KEY = 'savedResults'
+
+type SavedResult = {
+  filename: string;
+  savedAt: string;
+  uri: string;
+}
 
 export default function AnalysisScreen() {
   const emit = DeviceEventEmitter.emit.bind(DeviceEventEmitter)
@@ -46,6 +56,10 @@ export default function AnalysisScreen() {
   const [showFileNamePopup, setShowFileNamePopup] = useState(false)
   const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null)
   const [fileName, setFileName] = useState('')
+  const [showFileNameModal, setShowFileNameModal] = useState(false)
+  const [downloadFileName, setDownloadFileName] = useState('')
+  const [downloadPressed, setDownloadPressed] = useState(false)
+  const [savedResults, setSavedResults] = useState<SavedResult[]>([])
 
   const [folders, setFolders] = useState<FolderType[]>([])
   const [foldersLoading, setFoldersLoading] = useState(false)
@@ -55,12 +69,110 @@ export default function AnalysisScreen() {
 
   const captureRef2 = useRef<View>(null);
 
+  // Load saved results on mount
+  useEffect(() => {
+    AsyncStorage.getItem(SAVED_RESULTS_KEY).then((data: string | null) => {
+      if (data) setSavedResults(JSON.parse(data))
+    })
+  }, [])
+
+  const persistSavedResults = async (results: SavedResult[]) => {
+    await AsyncStorage.setItem(SAVED_RESULTS_KEY, JSON.stringify(results))
+  }
+
   const handleFolderSelect = (folder: FolderType) => {
     setSelectedFolder(folder)
     setFileName('')
     setShowFolderPopup(false)
     setShowFileNamePopup(true)
   }
+
+  const handleConfirmDownloadFileName = async () => {
+    if (!downloadFileName.trim()) {
+      show('warning', 'Invalid', 'Please enter a file name.')
+      return;
+    }
+
+    try {
+      setDownloading(true);
+
+      const permissionResult = await MediaLibrary.requestPermissionsAsync(true);
+      if (permissionResult.status !== 'granted') {
+        if (permissionResult.canAskAgain) {
+          const retryResult = await MediaLibrary.requestPermissionsAsync(true);
+          if (retryResult.status !== 'granted') {
+            showPermissionDeniedAlert();
+            return;
+          }
+        } else {
+          showPermissionDeniedAlert();
+          return;
+        }
+      }
+
+      const filename = downloadFileName.trim().includes('.')
+        ? downloadFileName.trim()
+        : `${downloadFileName.trim()}.png`;
+
+      const capturedImageUri = await captureRef(captureRef2, { format: 'png', quality: 1 });
+
+      const destUri = `${FileSystem.documentDirectory}${filename}`;
+      await FileSystem.copyAsync({ from: capturedImageUri, to: destUri });
+
+      const asset = await MediaLibrary.createAssetAsync(destUri);
+
+      
+      const album = await MediaLibrary.getAlbumAsync('DetectionResults');
+      if (album) {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      } else {
+        await MediaLibrary.createAlbumAsync('DetectionResults', asset, false);
+      }
+
+      // await FileSystem.deleteAsync(destUri, { idempotent: true });
+
+
+      // Append to saved results list, capped at 10
+      const newEntry: SavedResult = {
+        filename,
+        savedAt: new Date().toLocaleString(),
+        uri: destUri,
+      }
+      
+      const updated = [newEntry, ...savedResults]
+      const capped = updated.length > 10 ? updated.slice(0, 10) : updated
+      persistSavedResults(capped)
+      setSavedResults(capped)
+      DeviceEventEmitter.emit('savedResults:refresh')
+
+      show('success', 'Saved', `Image saved to your gallery as "${filename}"`)
+      setShowFileNameModal(false);
+      setDownloadFileName('');
+    } catch (err: any) {
+      console.log('Download error:', err.message, err)
+      show('danger', 'Error', err.message || 'Failed to save image.')
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  
+
+  useEffect(() => {
+    if (imageUri) {
+      getOriginalImageSize(imageUri).then(setImageSize);
+    }
+  }, [imageUri]);
+
+  useEffect(() => {
+    if (typeof image === 'string') {
+      const decoded = decodeURIComponent(image)
+      setImageUri(decoded)
+      setAnalyzedImageUri(null)
+      setResult(null)
+      setImageSize(null)
+    }
+  }, [image]);
 
   const handleConfirmFileName = async () => {
     if (!imageUri || !result || !selectedFolder) {
@@ -72,16 +184,12 @@ export default function AnalysisScreen() {
       return
     }
     try {
-      // setSavingImage(true)
       setShowFileNamePopup(false)
-
-      // Ensure we have the image size before uploading
       let finalImageSize = imageSize
       if (!finalImageSize) {
         finalImageSize = await getOriginalImageSize(imageUri)
         setImageSize(finalImageSize)
       }
-
       const imagePayload = getImageMetaFromUri(imageUri)
       const finalFileName = fileName.includes('.') ? fileName : `${fileName}`
       const created = await uploadImage({
@@ -120,68 +228,17 @@ export default function AnalysisScreen() {
       } else {
         show('danger', 'Error', message)
       }
-    } finally {
-      // setSavingImage(false)
     }
   }
 
-  useEffect(() => {
-    if (imageUri) {
-      getOriginalImageSize(imageUri).then(setImageSize);
-    }
-  }, [imageUri]);
-
-
-
-  useEffect(() => {
-    if (typeof image === 'string') {
-      const decoded = decodeURIComponent(image)
-      setImageUri(decoded)
-      setAnalyzedImageUri(null)
-      setResult(null)
-      setImageSize(null)
-    }
-  }, [image]);
-
   const handleDownload = async () => {
-    try {
-      setDownloading(true);
-
-      const permissionResult = await MediaLibrary.requestPermissionsAsync(true);
-
-      if (permissionResult.status !== 'granted') {
-        if (permissionResult.canAskAgain) {
-          const retryResult = await MediaLibrary.requestPermissionsAsync(true);
-          if (retryResult.status !== 'granted') {
-            showPermissionDeniedAlert();
-            return;
-          }
-        } else {
-          showPermissionDeniedAlert();
-          return;
-        }
-      }
-
-      const imageUri = await captureRef(captureRef2, { format: 'png', quality: 1 });
-      const asset = await MediaLibrary.createAssetAsync(imageUri);
-      await MediaLibrary.createAlbumAsync('DetectionResults', asset, false);
-      show('success', 'Saved', 'Image saved to your gallery!')
-    } catch (err: any) {
-      // console.error('Download error:', err);
-      if (err.message?.includes('User didn\'t grant write permission') || 
-        err.message?.includes('rejected')) {
-        return;
-      }
-      show('danger', 'Error', err.message || 'Failed to save image.')
-    } finally {
-      setDownloading(false);
-    }
+    setShowFileNameModal(true);
+    setDownloadFileName('detection-result');
   };
 
-    const showPermissionDeniedAlert = () => {
+  const showPermissionDeniedAlert = () => {
     setShowPermissionAlert(true);
   };
-
 
   const getImageMetaFromUri = (uri: string) => {
     const filename = uri.split('/').pop() || 'image.jpg';
@@ -271,45 +328,36 @@ export default function AnalysisScreen() {
 
         {result && result.detections?.thyrocytes && imageSize && analyzedImageUri ? (
           <>
-            {/* 
-              ResumableZoom lives HERE in AnalysisScreen, not inside DetectionOverlay.
-              The inner View with ref is what gets captured for download.
-            */}
             <View style={{ overflow: 'hidden' }}>
-              <ResumableZoom maxScale={8} minScale={1} >
+              <ResumableZoom maxScale={8} minScale={1}>
+                <View
+                  ref={captureRef2}
+                  collapsable={false}
+                  style={{ backgroundColor: 'white', padding: CAPTURE_PADDING }}
+                >
                   <View
-                    ref={captureRef2}
+                    ref={detectionRef}
                     collapsable={false}
                     style={{
-                      backgroundColor: 'white', // or any background color you want
-                      padding: CAPTURE_PADDING,
+                      width: captureImageWidth,
+                      aspectRatio: imageSize.width / imageSize.height,
+                      marginVertical: 10,
                     }}
+                    onLayout={() => setIsLayoutReady(true)}
                   >
-                    <View
-                      ref={detectionRef}
-                      collapsable={false}
-                      style={{
-                        width: captureImageWidth,
-                        aspectRatio: imageSize.width / imageSize.height,
-                        marginVertical: 10,
-                      }}
-                      onLayout={() => setIsLayoutReady(true)}
-                    >
-
-                      <DetectionOverlay
-                        imageUri={analyzedImageUri}
-                        thyrocytes={result.detections?.thyrocytes}
-                        clusters={result.detections?.clusters}
-                        originalWidth={imageSize.width}
-                        originalHeight={imageSize.height}
-                        displayWidth={captureImageWidth} 
-                      />
-                    </View>
+                    <DetectionOverlay
+                      imageUri={analyzedImageUri}
+                      thyrocytes={result.detections?.thyrocytes}
+                      clusters={result.detections?.clusters}
+                      originalWidth={imageSize.width}
+                      originalHeight={imageSize.height}
+                      displayWidth={captureImageWidth}
+                    />
+                  </View>
                 </View>
               </ResumableZoom>
             </View>
 
-            {/* NEW legend — paste this in its place */}
             <View className="flex-row justify-start items-center gap-4 flex-wrap">
               <View className="flex-row items-center gap-2">
                 <View className="w-4 h-4 bg-green-500 rounded-sm" />
@@ -319,7 +367,6 @@ export default function AnalysisScreen() {
                 <View className="w-4 h-4 bg-blue-500 rounded-sm" />
                 <Text className="text-gray-800 text-sm">Inadequate</Text>
               </View>
-              {/* NEW */}
               <View className="flex-row items-center gap-2">
                 <View className="w-4 h-4 bg-red-500 rounded-sm" />
                 <Text className="text-gray-800 text-sm">Isolated</Text>
@@ -327,19 +374,25 @@ export default function AnalysisScreen() {
             </View>
 
             <View className="w-full flex-col gap-2">
-              <Pressable onPress={handleDownload} disabled={downloading}>
-                {({ pressed }) => (
-                  <View
-                    className="w-full py-3 rounded-sm items-center justify-center flex-row gap-2"
-                    style={{ backgroundColor: downloading ? '#9ca3af' : pressed ? '#15803d' : '#16a34a', elevation: 3 }}
-                  >
-                    {downloading ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <Text className="text-white font-bold">Download Result</Text>
-                    )}
-                  </View>
-                )}
+              <Pressable
+                onPress={handleDownload}
+                disabled={downloading}
+                onPressIn={() => setDownloadPressed(true)}
+                onPressOut={() => setDownloadPressed(false)}
+              >
+                <View
+                  className="w-full py-3 rounded-sm items-center justify-center flex-row gap-2"
+                  style={{
+                    backgroundColor: downloading ? '#9ca3af' : downloadPressed ? '#15803d' : '#16a34a',
+                    elevation: 3
+                  }}
+                >
+                  {downloading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white font-bold">Download Result</Text>
+                  )}
+                </View>
               </Pressable>
             </View>
           </>
@@ -381,21 +434,48 @@ export default function AnalysisScreen() {
               autoFocus={true}
               onSubmitEditing={handleConfirmFileName}
             />
-            {/* <View className="flex-row justify-end space-x-3">
-              <TouchableOpacity
-                className="px-5 py-2 rounded-lg"
-                onPress={() => { setShowFileNamePopup(false); setSelectedFolder(null); setFileName('') }}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Download Filename Modal */}
+      <Modal
+        visible={showFileNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFileNameModal(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center">
+          <View className="bg-white rounded-lg p-6 w-80">
+            <Text className="text-lg font-semibold mb-4">Save Result As</Text>
+            <TextInput
+              value={downloadFileName}
+              onChangeText={setDownloadFileName}
+              placeholder="Enter file name"
+              className="border border-gray-300 rounded-md p-3 mb-4"
+              placeholderTextColor="#999"
+              editable={!downloading}
+            />
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => setShowFileNameModal(false)}
+                disabled={downloading}
+                className="flex-1"
               >
-                <Text className="text-gray-600 font-medium">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="bg-blue-500 px-5 py-2 rounded-lg"
-                onPress={handleConfirmFileName}
-                disabled={savingImage}
+                <View className="py-2 rounded-md bg-gray-200 items-center">
+                  <Text className="font-semibold">Cancel</Text>
+                </View>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirmDownloadFileName}
+                disabled={downloading}
+                className="flex-1"
               >
-                {savingImage ? <ActivityIndicator color="white" size="small" /> : <Text className="text-white font-medium">Save</Text>}
-              </TouchableOpacity>
-            </View> */}
+                <View className={`py-2 rounded-md items-center ${downloading ? 'bg-gray-400' : 'bg-green-600'}`}>
+                  <Text className="font-semibold text-white">Save</Text>
+                </View>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>

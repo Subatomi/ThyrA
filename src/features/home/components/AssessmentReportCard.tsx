@@ -45,7 +45,7 @@ const AssessmentReportCard = ({ title, date, imageSource, onPress }: ReportCardP
           <Text numberOfLines={1} className="text-xl font-bold text-gray-900 text-center">
             {title}
           </Text>
-          <Text className="text-base text-gray-400 font-bold uppercase tracking-widest">
+          <Text className="text-center  text-gray-400 font-bold uppercase tracking-widest">
             {date.split('T')[0]}
           </Text>
         </View>
