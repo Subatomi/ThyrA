@@ -233,7 +233,12 @@ export default function AnalysisScreen() {
 
   const handleDownload = async () => {
     setShowFileNameModal(true);
-    setDownloadFileName('detection-result');
+    if (imageUri) {
+      const originalFilename = imageUri.split('/').pop() || 'detection-result';
+      setDownloadFileName(originalFilename);
+    } else {
+      setDownloadFileName('detection-result');
+    }
   };
 
   const showPermissionDeniedAlert = () => {
